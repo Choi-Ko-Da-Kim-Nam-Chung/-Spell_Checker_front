@@ -28,7 +28,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t yourusername/yourimagename:${{ github.sha }} .
+          docker build -t aj4941/spell-checker-frontend:${{ github.sha }} .
         env:
           CI: true
 
