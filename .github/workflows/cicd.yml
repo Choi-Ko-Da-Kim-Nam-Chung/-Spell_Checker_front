@@ -1,4 +1,4 @@
-name: CI/CD for React Project
+name: CICD
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout
@@ -28,15 +28,13 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t aj4941/spell-checker-frontend:${{ github.sha }} .
-        env:
-          CI: true
+          docker build -t aj4941/spell_checker_frontend:${{ github.sha }} .
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Push Docker Image to Docker Hub
-        run: docker push aj4941/spell-checker-frontend:${{ github.sha }}
+        run: docker push aj4941/spell_checker_frontend:${{ github.sha }}
