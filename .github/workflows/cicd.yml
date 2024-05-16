@@ -42,3 +42,12 @@ jobs:
 
       - name: Push Docker Image to Docker Hub
         run: docker push aj4941/spell_checker_frontend:${{ github.sha }}
+
+      - name: SSH into AWS EC2 instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: 3.38.168.254
+          username: ubuntu
+          key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+          script: |
+            ssh -o StrictHostKeyChecking=no ubuntu@10.0.129.19 'bash /home/ubuntu/deploy-frontend.sh'
