@@ -50,4 +50,4 @@ jobs:
           username: ubuntu
           key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
           script: |
-            sudo ssh -i "spell-checker.pem" -o StrictHostKeyChecking=no ubuntu@10.0.129.19 'bash /home/ubuntu/deploy-frontend.sh
+            ssh -o StrictHostKeyChecking=no ubuntu@10.0.129.19 'bash /home/ubuntu/deploy-frontend.sh'
