@@ -63,6 +63,8 @@ const CheckerModify = ({ data, onUpdateData }) => {
   const applyChanges = () => {
     const updatedData = JSON.parse(JSON.stringify(data)); // 데이터의 깊은 복사
 
+    let isValid = true; // 모든 입력이 유효한지 여부를 추적하는 플래그
+
     const updateContent = body => {
       body.forEach(section => {
         if (section.type === 'PARAGRAPH' && section.errors.length > 0) {
@@ -80,6 +82,10 @@ const CheckerModify = ({ data, onUpdateData }) => {
                 newText = errorToApply.replacementText;
               } else if (errorToApply.checkedSection === 'user') {
                 newText = errorToApply.userText;
+                if (!newText.trim()) {
+                  // 사용자가 '직접 수정'에 아무것도 입력하지 않았을 경우
+                  isValid = false; // 유효하지 않은 입력이 있음을 표시
+                }
               } else {
                 newText = originalText.substring(error.start, error.end);
               }
@@ -87,7 +93,7 @@ const CheckerModify = ({ data, onUpdateData }) => {
               // Update the text and adjust indices accordingly
               section.orgStr = beforeText + newText + afterText;
               error.end = error.start + newText.length; // Update end index based on new text length
-              error.checkedSection = errorToApply.checkedSection; // 새로 추가된 코드
+              error.checkedSection = errorToApply.checkedSection; // 선택한 섹션을 저장
             }
           });
         }
@@ -99,7 +105,12 @@ const CheckerModify = ({ data, onUpdateData }) => {
     };
 
     updateContent(updatedData.body);
-    onUpdateData(updatedData);
+
+    if (!isValid) {
+      alert('직접 수정할 내용을 입력해주세요.'); // 유효하지 않은 입력이 있을 경우 경고 표시
+    } else {
+      onUpdateData(updatedData); // 모든 입력이 유효할 경우 업데이트 함수 호출
+    }
   };
 
   // 컴포넌트의 렌더링 부분입니다. 각 오류에 대해 해당 UI 요소를 표시합니다.
