@@ -32,7 +32,7 @@ jobs:
           CI: false
 
       - name: Build Docker Image
-        run: docker build -t aj4941/spell_checker_frontend:${{ github.sha }} .
+        run: docker build -t aj4941/spell_checker_frontend:latest .
 
       - name: Login Docker Hub
         uses: docker/login-action@v1
@@ -41,7 +41,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Push Docker Image to Docker Hub
-        run: docker push aj4941/spell_checker_frontend:${{ github.sha }}
+        run: docker push aj4941/spell_checker_frontend:latest
 
       - name: SSH into AWS EC2 instance
         uses: appleboy/ssh-action@master
@@ -50,4 +50,4 @@ jobs:
           username: ubuntu
           key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
           script: |
-            ssh -o StrictHostKeyChecking=no ubuntu@10.0.129.19 'bash /home/ubuntu/deploy-frontend.sh'
+            sudo ssh -i "spell-checker.pem" -o StrictHostKeyChecking=no ubuntu@10.0.129.19 'bash /home/ubuntu/deploy-frontend.sh
