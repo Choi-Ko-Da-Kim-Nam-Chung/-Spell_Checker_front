@@ -13,7 +13,7 @@ function Checker() {
   const navigate = useNavigate();
 
   const location = useLocation();
-  const initialData = location.state?.data || Predata; // 초기 데이터 로드
+  const initialData = location.state?.data || Predata2; // 초기 데이터 로드
 
   const [data, setData] = useState(initialData);
 
