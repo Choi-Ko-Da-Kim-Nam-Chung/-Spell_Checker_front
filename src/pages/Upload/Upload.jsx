@@ -30,8 +30,8 @@ function Upload() {
       formData.append('type', checkerType);
 
       try {
-        const response = await axios.post('http://localhost:8080/grammar-check/docx/scan', formData);
-        navigate('/checker', { state: { data: response.data } });
+        const response = await axios.post('api.spell-checker.co.kr/grammar-check/docx/scan', formData);
+        navigate('/checker', { state: { data: response.data, originalFile: selectedFile } });
       } catch (error) {
         console.error('Error:', error.message);
         alert('파일과 검사 유형을 선택해주세요.');
