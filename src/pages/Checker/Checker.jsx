@@ -4,16 +4,18 @@ import { useNavigate, useLocation } from 'react-router-dom'; // 페이지 이동
 import CheckerFile from './CheckerFile';
 import CheckerModify from './CheckerModify';
 import { images } from '../../utils/images';
+
 import Predata from '../../utils/data.json'; // 이게 원경이
-import Predata2 from '../../utils/data2.json';
-import Predata3 from '../../utils/data3.json';
+import Predata2 from '../../utils/data2.json'; // 예시데이터 2
+import Predata3 from '../../utils/data3.json'; // 예시데이터 3 (추천수정없는 버전)
 import axios from 'axios';
 
 function Checker() {
   const navigate = useNavigate();
 
   const location = useLocation();
-  const initialData = location.state?.data || Predata2; // 초기 데이터 로드
+  const initialData = location.state?.data || Predata; // 초기 데이터 로드
+  // const originalFile = location.state.originalFile; // 업로드한 원본 파일
 
   const [data, setData] = useState(initialData);
 
@@ -23,8 +25,8 @@ function Checker() {
 
   const finishEdit = async () => {
     // 수정완료 버튼 누르면 수정사항 담아서 백엔드 서버로 전송
-    const formData = new FormData(); // FormData 인스턴스 생성
-    // formData.append('file', originalDocxFile); // 원본 docx 파일 추가 (이 파일을 어딘가에서 관리해야 해야함)
+    const formData = new FormData(); //
+    //  formData.append('file', originalFile); // 원본 docx 파일 추가
     formData.append('data', JSON.stringify(data)); // 수정된 데이터를 문자열로 변환하여 추가
 
     try {
