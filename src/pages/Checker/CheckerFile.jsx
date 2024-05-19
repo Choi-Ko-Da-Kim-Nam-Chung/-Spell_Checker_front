@@ -1,5 +1,7 @@
-const CheckerFile = ({ data }) => {
-  // 텍스트와 그 안의 오류들을 받아, 오류를 강조하여 표시하는 함수
+import React from 'react';
+
+const CheckerFile = ({ data, onTextClick }) => {
+  // 오류 강조 표시와 함께 텍스트를 렌더링하고 오류에 클릭 핸들러를 첨부
   const renderTextWithErrors = (text, errors) => {
     // 오류가 없거나 텍스트가 비어있는 경우, &nbsp; 를 이용해 공백을 유지하고 줄바꿈을 추가
     if (!errors || errors.length === 0) {
@@ -27,7 +29,11 @@ const CheckerFile = ({ data }) => {
 
       // 오류 부분을 볼드와 색상으로 강조하여 추가
       elements.push(
-        <span key={error.start} style={{ color, fontWeight: 'bold', whiteSpace: 'pre-wrap' }}>
+        <span
+          key={error.start}
+          id={`errorText-${error.start}`}
+          style={{ color, fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'pre-wrap' }}
+          onClick={() => onTextClick(error.start)}>
           {text.substring(error.start, error.end)}
         </span>,
       );
