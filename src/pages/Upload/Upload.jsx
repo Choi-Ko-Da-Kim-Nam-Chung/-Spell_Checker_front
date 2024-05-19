@@ -30,7 +30,7 @@ function Upload() {
       formData.append('type', checkerType);
 
       try {
-        const response = await axios.post('api.spell-checker.co.kr/grammar-check/docx/scan', formData);
+        const response = await axios.post('api.spell-checker.co.kr/grammar-check/scan', formData);
         navigate('/checker', { state: { data: response.data, originalFile: selectedFile } });
       } catch (error) {
         console.error('Error:', error.message);

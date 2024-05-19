@@ -14,7 +14,7 @@ function Checker() {
   const navigate = useNavigate();
 
   const location = useLocation();
-  const initialData = location.state?.data || Predata; // 초기 데이터 로드
+  const initialData = location.state?.data || Predata2; // 초기 데이터 로드
   // const originalFile = location.state.originalFile; // 업로드한 원본 파일
 
   const [data, setData] = useState(initialData);
@@ -30,7 +30,7 @@ function Checker() {
     formData.append('data', JSON.stringify(data)); // 수정된 데이터를 문자열로 변환하여 추가
 
     try {
-      const response = await axios.post('api.spell-checker.co.kr/grammer-check/docx/apply', formData, {
+      const response = await axios.post('api.spell-checker.co.kr/grammar-check/apply', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
