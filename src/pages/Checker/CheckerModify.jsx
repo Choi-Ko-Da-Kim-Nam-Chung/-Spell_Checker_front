@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
-const CheckerModify = ({ data, onUpdateData }) => {
+const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
   const [errors, setErrors] = useState([]);
 
+  // 데이터가 변경될 때 단락과 오류를 추출
   useEffect(() => {
     if (!data || !data.body) {
-      return; // 데이터가 유효하지 않으면 조기 반환
+      return;
     }
 
+    // 재귀적으로 단락을 추출
     const extractParagraphs = (item, paragraphs = []) => {
       if (item.type === 'PARAGRAPH') {
         paragraphs.push(item);
@@ -40,6 +42,7 @@ const CheckerModify = ({ data, onUpdateData }) => {
     setErrors(allErrors);
   }, [data]);
 
+  // 드롭다운에서 교체 옵션을 선택
   const handleReplacementSelection = (index, selectedOption) => {
     setErrors(
       errors.map((error, i) =>
@@ -48,10 +51,12 @@ const CheckerModify = ({ data, onUpdateData }) => {
     );
   };
 
+  // 사용자가 텍스트 입력을 변경할 때 호출
   const handleUserTextChange = (index, text) => {
     setErrors(errors.map((error, i) => (i === index ? { ...error, userText: text, checkedSection: 'user' } : error)));
   };
 
+  // 체크 섹션을 원본, 교체 및 사용자 입력 간에 전환하는 함수
   const toggleCheck = (index, section) => {
     setErrors(
       errors.map((error, i) =>
@@ -60,10 +65,11 @@ const CheckerModify = ({ data, onUpdateData }) => {
     );
   };
 
+  // 사용자가 선택하고 입력한 내용에 따라 데이터를 변경
   const applyChanges = () => {
-    const updatedData = JSON.parse(JSON.stringify(data)); // 데이터의 깊은 복사
+    const updatedData = JSON.parse(JSON.stringify(data));
 
-    let isValid = true; // 모든 입력이 유효한지 여부를 추적하는 플래그
+    let isValid = true;
 
     const updateContent = body => {
       body.forEach(section => {
@@ -83,15 +89,15 @@ const CheckerModify = ({ data, onUpdateData }) => {
               } else if (errorToApply.checkedSection === 'user') {
                 newText = errorToApply.userText;
                 if (!newText.trim()) {
-                  isValid = false; // 유효하지 않은 입력이 있음을 표시
+                  isValid = false;
                 }
               } else {
                 newText = originalText.substring(error.start, error.end);
               }
 
               section.orgStr = beforeText + newText + afterText;
-              error.end = error.start + newText.length; // Update end index based on new text length
-              error.checkedSection = errorToApply.checkedSection; // 선택한 섹션을 저장
+              error.end = error.start + newText.length;
+              error.checkedSection = errorToApply.checkedSection;
             }
           });
         }
@@ -105,9 +111,9 @@ const CheckerModify = ({ data, onUpdateData }) => {
     updateContent(updatedData.body);
 
     if (!isValid) {
-      alert('직접 수정할 내용을 입력해주세요.'); // 유효하지 않은 입력이 있을 경우 경고 표시
+      alert('직접 수정할 내용을 입력해주세요.');
     } else {
-      onUpdateData(updatedData); // 모든 입력이 유효할 경우 업데이트 함수 호출
+      onUpdateData(updatedData);
     }
   };
 
@@ -123,7 +129,12 @@ const CheckerModify = ({ data, onUpdateData }) => {
           </div>
         ) : (
           errors.map((error, index) => (
-            <div key={index} className="px-4 pb-1 text-sm">
+            <div
+              key={index}
+              id={`modifyBox-${error.start}`}
+              className="modifyBox px-4 pb-1 text-sm"
+              onClick={() => onBoxClick(error.start)}
+              style={{ cursor: 'pointer' }}>
               <div className="flex items-center my-2">
                 <div className="text-black fontBold mr-5">기존 내용</div>
                 <div className="fontBold text-red-500">{error.originalText}</div>

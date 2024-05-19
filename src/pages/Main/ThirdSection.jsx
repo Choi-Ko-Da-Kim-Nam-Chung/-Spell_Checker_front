@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
 import { images } from '../../utils/images';
 
 const ThirdSection = forwardRef((props, ref) => {
@@ -20,6 +20,14 @@ const ThirdSection = forwardRef((props, ref) => {
         return images.mainIntro;
     }
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSelectedTextBox(prevTextBox => (prevTextBox === 2 ? 0 : prevTextBox + 1));
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>

@@ -3,38 +3,56 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Nav from '../../components/Nav';
 import { images } from '../../utils/images';
+import { IoClose } from 'react-icons/io5';
+import Lottie from 'lottie-react';
+import loadingLottie from '../../utils/loading.json';
 
 function Upload() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false); // 로딩 상태 관리
+  const [showPopup, setShowPopup] = useState(false); // 팝업 표시 여부 상태 관리
   const [inputType, setInputType] = useState('file'); // 파일 또는 텍스트 입력 상태 관리
   const [selectedFile, setSelectedFile] = useState(null); // 선택된 파일 상태 관리
   const [text, setText] = useState(''); // 텍스트 입력 상태 관리
   const [checkerType, setCheckerType] = useState('');
+  const [showManual, setShowManual] = useState(false);
+  const [checkerName, setCheckerName] = useState(''); // 검사명 상태 관리
 
   const textChange = e => {
     setText(e.target.value); // 텍스트 변경 처리
   };
 
   const handleFileChange = e => {
-    setSelectedFile(e.target.files[0]); // 파일 변경 처리
+    const file = e.target.files[0];
+    setSelectedFile(file); // 파일 변경 처리
+    if (file) {
+      setCheckerName(file.name); // 파일명으로 검사명 설정
+    }
   };
 
   const handleTypeChange = e => {
     setCheckerType(e.target.value);
   };
 
+  const handleCheckerNameChange = e => {
+    setCheckerName(e.target.value); // 검사명 변경 처리
+  };
+
   const handleStartCheck = async () => {
     if (inputType === 'file' && selectedFile && checkerType) {
+      setShowPopup(true); // 팝업 표시
       const formData = new FormData();
       formData.append('file', selectedFile);
       formData.append('type', checkerType);
 
       try {
-        const response = await axios.post('api.spell-checker.co.kr/grammar-check/scan', formData);
-        navigate('/checker', { state: { data: response.data, originalFile: selectedFile } });
+        const response = await axios.post('https://api.spell-checker.co.kr/grammar-check/scan', formData);
+        navigate('/checker', { state: { data: response.data, originalFile: selectedFile, checkerName } });
       } catch (error) {
         console.error('Error:', error.message);
         alert('파일과 검사 유형을 선택해주세요.');
+      } finally {
+        setShowPopup(false); // 팝업 숨기기
       }
     } else {
       alert('파일과 검사 유형을 선택해주세요.');
@@ -53,8 +71,33 @@ function Upload() {
           <div className="text-3xl fontBold w-11/12 border-l-8 border-[#303A6E] pl-4 py-3 mt-4 flex justify-between">
             <div>문서 업로드</div>
           </div>
+          {showManual && (
+            <div className="absolute right-44 top-56 z-20 rounded-lg shadow-2xl w-4/12">
+              <div className="bg-white p-8 rounded-lg">
+                <div className="flex justify-between">
+                  <div className="text-xl font-bold">사용설명서</div>
+                  <button onClick={() => setShowManual(false)}>
+                    <IoClose size="25" />
+                  </button>
+                </div>
+                <div className="border mt-2"></div>
+                <div className="p-1 mt-2 leading-loose flex">
+                  <div className="mr-1">
+                    <div>1.</div>
+                    <div>2.</div>
+                    <div>3.</div>
+                  </div>
+                  <div>
+                    <div>맞춤법 검사를 하실 파일 및 텍스트를 업로드해주세요.</div>
+                    <div>검사명을 입력해주세요.(입력하신 검사명으로 파일이 다운됩니다.)</div>
+                    <div>검사유형을 선택 후 검사 시작 버튼을 눌러주세요.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex items-center w-11/12 px-1 justify-end text-base text-[#c8c8c8]">
-            <div className="flex items-center cursor-pointer">
+            <div className="flex items-center cursor-pointer" onClick={() => setShowManual(true)}>
               <img src={images.Question} alt="물음표 아이콘" className="w-4 h-4 mx-2" />
               <div>사용설명서</div>
             </div>
@@ -93,7 +136,11 @@ function Upload() {
                 <div className="flex items-center">
                   <img src="./assets/images/list_disc.png" alt="리스트 원" className="mr-4" />
                   <span className="text-lg font-medium w-14">검사명</span>
-                  <input className="p-1 h-8 bg-white border border-zinc-400 rounded w-7/12 ml-10" />
+                  <input
+                    className="p-1 h-8 bg-white border border-zinc-400 rounded w-7/12 ml-10"
+                    value={checkerName}
+                    onChange={handleCheckerNameChange}
+                  />
                 </div>
                 <div className="ml-28 pl-2 mt-4 text-neutral-400 text-opacity-95 text-xs">
                   * 파일 다운 시 작성하신 검사명으로 파일 명이 작성됩니다.
@@ -171,6 +218,16 @@ function Upload() {
           </div>
         </div>
       </div>
+      {showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg w-[500px]">
+            <div className="">
+              <Lottie animationData={loadingLottie} />
+            </div>
+            <div className="mt-4 text-lg text-center text-gray-400">시간이 다소 소요될 수 있습니다...</div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

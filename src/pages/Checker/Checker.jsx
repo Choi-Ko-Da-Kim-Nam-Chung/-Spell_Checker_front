@@ -1,43 +1,81 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Nav from '../../components/Nav'; // 네비게이션 컴포넌트
 import { useNavigate, useLocation } from 'react-router-dom'; // 페이지 이동
 import CheckerFile from './CheckerFile';
 import CheckerModify from './CheckerModify';
 import { images } from '../../utils/images';
 
-import Predata from '../../utils/data.json'; // 이게 원경이
 import Predata2 from '../../utils/data2.json'; // 예시데이터 2
-import Predata3 from '../../utils/data3.json'; // 예시데이터 3 (추천수정없는 버전)
 import axios from 'axios';
+import { IoClose } from 'react-icons/io5';
 
 function Checker() {
   const navigate = useNavigate();
-
   const location = useLocation();
   const initialData = location.state?.data || Predata2; // 초기 데이터 로드
   // const originalFile = location.state.originalFile; // 업로드한 원본 파일
+  const originalDocxFile = location.state?.originalFile; // 전달받은 원본 파일
 
   const [data, setData] = useState(initialData);
+  const [showManual, setShowManual] = useState(false);
+  const [showDownloadPopup, setShowDownloadPopup] = useState(false);
+  const [fileBlob, setFileBlob] = useState(null);
+  const [modifiedText, setModifiedText] = useState({}); // 추가된 상태
 
-  const updateData = newData => {
-    setData(newData); // 상태 업데이트
+  const fileRef = useRef(null);
+  const modifyRef = useRef(null);
+
+  const handleUpdateData = updatedData => {
+    setData(updatedData); // 상태 업데이트
+    setModifiedText(modifiedText => ({
+      ...modifiedText,
+      ...updatedData.modifiedText,
+    }));
+  };
+
+  const handleTextClick = start => {
+    const modifyBox = document.getElementById(`modifyBox-${start}`);
+    if (modifyBox) {
+      modifyBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const handleBoxClick = start => {
+    const errorText = document.getElementById(`errorText-${start}`);
+    if (errorText) {
+      errorText.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   };
 
   const finishEdit = async () => {
-    // 수정완료 버튼 누르면 수정사항 담아서 백엔드 서버로 전송
-    const formData = new FormData(); //
-    //  formData.append('file', originalFile); // 원본 docx 파일 추가
+    const formData = new FormData(); // FormData 인스턴스 생성
+    formData.append('file', originalDocxFile); // 원본 docx 파일 추가
     formData.append('data', JSON.stringify(data)); // 수정된 데이터를 문자열로 변환하여 추가
+    console.log(data);
 
     try {
-      const response = await axios.post('api.spell-checker.co.kr/grammar-check/apply', formData, {
+      const response = await axios.post('https://api.spell-checker.co.kr/grammar-check/apply', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        responseType: 'blob', // 파일 다운로드를 위한 설정
       });
       console.log(response.data); // 성공 응답 로그 출력
+      setFileBlob(new Blob([response.data], { type: response.headers['content-type'] }));
+      setShowDownloadPopup(true); // 다운로드 팝업창 표시
     } catch (error) {
       console.error('Error sending data:', error); // 에러 처리
+    }
+  };
+
+  const downloadFile = () => {
+    if (fileBlob) {
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(fileBlob);
+      link.download = 'modified_document.docx'; // 원하는 파일명 설정
+      link.click();
+      window.URL.revokeObjectURL(link.href);
+      setShowDownloadPopup(false); // 팝업창 닫기
     }
   };
 
@@ -56,14 +94,46 @@ function Checker() {
           </div>
           <div className="flex items-center w-11/12 px-1 justify-between text-base text-[#a9a9a9]">
             <div className="text-sm">** 본 내용에서 서식은 무시됩니다.</div>
-            <div className="flex items-center cursor-pointer" onClick="">
+            <div className="flex items-center cursor-pointer" onClick={() => setShowManual(true)}>
               <img src={images.Question} alt="물음표 아이콘" className="w-4 h-4 mx-2" />
               <div className="text-[#c8c8c8]">사용설명서</div>
             </div>
           </div>
+          {showManual && (
+            <div>
+              <div className="absolute z-20 rounded-lg shadow-2xl w-5/12">
+                <div className="bg-white p-8 rounded-lg">
+                  <div className="flex justify-between">
+                    <div className="text-xl font-bold">사용설명서</div>
+                    <button onClick={() => setShowManual(false)}>
+                      <IoClose size="25" />
+                    </button>
+                  </div>
+                  <div className="border mt-2"></div>
+                  <div className="p-1 mt-2 leading-loose flex">
+                    <div className="mr-1">
+                      <div>1.</div>
+                      <br />
+                      <div>2.</div>
+                      <br />
+                      <div>3.</div>
+                    </div>
+                    <div>
+                      <div>기존 내용을 유지하고 싶다면, 기존 내용 옆의 선택버튼을 누른 후 적용버튼을 눌러주세요.</div>
+                      <div>
+                        원하는 수정사항이 있으시다면, 직접 수정에 내용을 작성하시고, 선택 버튼 클릭 후 적용 버튼을
+                        눌러주세요.
+                      </div>
+                      <div>전체적으로 수정이 완료되면, 수정 완료 버튼을 누른 후 파일을 다운받아주세요.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex justify-center w-11/12 h-full mt-2">
-            <CheckerFile data={data} />
-            <CheckerModify data={data} onUpdateData={updateData} />
+            <CheckerFile data={data} onTextClick={handleTextClick} modifiedText={modifiedText} />
+            <CheckerModify data={data} onUpdateData={handleUpdateData} onBoxClick={handleBoxClick} />
           </div>
           <div className="w-11/12 mt-4 flex justify-end items-center">
             <button
@@ -77,7 +147,25 @@ function Checker() {
           </div>
         </div>
       </div>
+      {showDownloadPopup && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg shadow-2xl">
+            <div className="text-lg font-bold mb-4">파일을 다운하시겠습니까?</div>
+            <div className="flex justify-center">
+              <button
+                className="text-sm text-white py-2 px-4 bg-blue-500 fontBold rounded-2xl mr-2"
+                onClick={downloadFile}>
+                다운
+              </button>
+              <button className="text-sm py-2 px-4 bg-gray-300 rounded-2xl" onClick={() => setShowDownloadPopup(false)}>
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
+
 export default Checker;
