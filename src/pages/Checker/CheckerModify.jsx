@@ -67,7 +67,7 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
 
   // 사용자가 선택하고 입력한 내용에 따라 데이터를 변경
   const applyChanges = () => {
-    const updatedData = JSON.parse(JSON.stringify(data));
+    const updatedData = JSON.parse(JSON.stringify(data)); // 데이터 깊은 복사
 
     let isValid = true;
 
@@ -86,11 +86,13 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
                 newText = errorToApply.originalText;
               } else if (errorToApply.checkedSection === 'replacement') {
                 newText = errorToApply.selectedReplacement;
+                error.replaceStr = newText; // 수정된 replaceStr를 반영
               } else if (errorToApply.checkedSection === 'user') {
                 newText = errorToApply.userText;
                 if (!newText.trim()) {
                   isValid = false;
                 }
+                error.replaceStr = newText; // 사용자가 직접 입력한 값을 replaceStr로 설정
               } else {
                 newText = originalText.substring(error.start, error.end);
               }
@@ -116,7 +118,6 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
       onUpdateData(updatedData);
     }
   };
-
   return (
     <div className="flex flex-col h-[60vh] w-[30%]">
       <div className="bg-slate-700 h-14 pb-3 sticky top-0">
