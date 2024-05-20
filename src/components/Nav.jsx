@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { images } from '../utils/images';
 
 const DETAIL_NAV = [
   { idx: 0, title: '서비스 소개' },
@@ -89,8 +90,8 @@ const Nav = ({ scrollRef }) => {
                 behavior: 'smooth',
               });
             }}>
-            <div className="fontBold">
-              <span className="text-[#5e75ee]">서식 유지</span> 맞춤법 검사기
+            <div className="fontBold flex flex-row">
+              <span className="text-[#5e75ee] pr-1.5">서식 유지</span> 맞춤법 검사기
             </div>
           </Link>
           <div className="flex justify-between text-base text-[#a9a9a9] my-auto">

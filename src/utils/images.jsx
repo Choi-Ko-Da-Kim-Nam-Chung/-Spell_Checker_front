@@ -8,9 +8,11 @@ export const images = {
   textCloud: PATH + '/assets/images/textCloud.svg',
   howToUse2: PATH + '/assets/images/howToUse2.svg',
   howToUse3: PATH + '/assets/images/howToUse3.svg',
+  logo: PATH + '/assets/images/logo.png',
 
-  // Output
-  wordLogo: PATH + '/assets/images/wordLogo.svg',
+  // download
+  HwpIcon: PATH + '/assets/images/HwpIcon.svg',
+  DocxIcon: PATH + '/assets/images/DocxIcon.svg',
 
   /* Checker */
   Question: PATH + '/assets/images/QuestionMark.png',

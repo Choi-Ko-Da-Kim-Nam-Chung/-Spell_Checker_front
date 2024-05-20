@@ -24,7 +24,7 @@ const ThirdSection = forwardRef((props, ref) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setSelectedTextBox(prevTextBox => (prevTextBox === 2 ? 0 : prevTextBox + 1));
-    }, 3500);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
