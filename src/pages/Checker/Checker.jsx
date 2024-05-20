@@ -80,6 +80,10 @@ function Checker() {
     }
   };
 
+  // 파일 확장자에 따른 아이콘 결정
+  const fileExtension = checkerName.split('.').pop().toLowerCase();
+  const fileIcon = fileExtension === 'docx' ? images.DocxIcon : fileExtension === 'hwp' ? images.HwpIcon : null;
+
   // 닫기 버튼 클릭 이벤트 핸들러
   const onClose = () => {
     navigate(-1); // 업로드 페이지로 돌아감
@@ -150,8 +154,13 @@ function Checker() {
       </div>
       {showDownloadPopup && (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-8 rounded-lg shadow-2xl">
-            <div className="text-lg font-bold mb-4">파일을 다운하시겠습니까?</div>
+          <div className="bg-white py-8 px-16 rounded-[40px] shadow-2xl">
+            {fileIcon && (
+              <div className="flex justify-center my-4">
+                <img src={fileIcon} alt="File Icon" className="w-12 h-12" />
+              </div>
+            )}
+            <div className="text-lg font-bold mb-4 text-center">파일을 다운하시겠습니까?</div>
             <div className="flex justify-center">
               <button
                 className="text-sm text-white py-2 px-4 bg-blue-500 fontBold rounded-2xl mr-2"
