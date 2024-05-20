@@ -69,7 +69,7 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
   const applyChanges = () => {
     const updatedData = JSON.parse(JSON.stringify(data)); // 데이터 깊은 복사
 
-    let isValid = true;
+    let isValid = true; // 모든 입력이 유효한지 여부를 추적
 
     const updateContent = body => {
       body.forEach(section => {
@@ -77,35 +77,28 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
           section.errors.forEach(error => {
             const errorToApply = errors.find(e => e.paragraphId === section.id && e.start === error.start);
             if (errorToApply) {
-              const originalText = section.orgStr;
-              const beforeText = originalText.substring(0, error.start);
-              const afterText = originalText.substring(error.end);
+              const { checkedSection, selectedReplacement, userText } = errorToApply;
               let newText;
 
-              if (errorToApply.checkedSection === 'original') {
-                newText = errorToApply.originalText;
-              } else if (errorToApply.checkedSection === 'replacement') {
-                newText = errorToApply.selectedReplacement;
-                error.replaceStr = newText; // 수정된 replaceStr를 반영
-              } else if (errorToApply.checkedSection === 'user') {
-                newText = errorToApply.userText;
-                if (!newText.trim()) {
-                  isValid = false;
-                }
-                error.replaceStr = newText; // 사용자가 직접 입력한 값을 replaceStr로 설정
-              } else {
-                newText = originalText.substring(error.start, error.end);
+              switch (checkedSection) {
+                case 'original':
+                  newText = error.orgStr; // 원본을 유지
+                  break;
+                case 'replacement':
+                  newText = selectedReplacement; // 선택된 수정사항
+                  break;
+                case 'user':
+                  newText = userText; // 사용자 입력
+                  if (!newText.trim()) {
+                    isValid = false; // 입력값이 비어 있으면 유효하지 않음
+                    return;
+                  }
+                  break;
               }
 
-              section.orgStr = beforeText + newText + afterText;
-              error.end = error.start + newText.length;
-              error.checkedSection = errorToApply.checkedSection;
+              error.replaceStr = newText; // replaceStr 설정
             }
           });
-        }
-
-        if (section.table) {
-          section.table.forEach(row => row.forEach(cell => updateContent(cell.ibody)));
         }
       });
     };
@@ -113,11 +106,12 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
     updateContent(updatedData.body);
 
     if (!isValid) {
-      alert('직접 수정할 내용을 입력해주세요.');
+      alert('직접 수정할 내용을 입력해주세요.'); // 유효하지 않은 입력에 대한 경고
     } else {
-      onUpdateData(updatedData);
+      onUpdateData(updatedData); // 모든 검증을 통과했으면 업데이트된 데이터를 상태에 반영
     }
   };
+
   return (
     <div className="flex flex-col h-[60vh] w-[30%]">
       <div className="bg-slate-700 h-14 pb-3 sticky top-0">
