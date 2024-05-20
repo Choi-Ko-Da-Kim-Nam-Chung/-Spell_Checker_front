@@ -15,6 +15,7 @@ function Checker() {
   const initialData = location.state?.data || Predata2; // 초기 데이터 로드
   // const originalFile = location.state.originalFile; // 업로드한 원본 파일
   const originalDocxFile = location.state?.originalFile; // 전달받은 원본 파일
+  const checkerName = location.state?.checkerName || 'modified_document'; // 전달받은 검사명, 기본값 설정
 
   const [data, setData] = useState(initialData);
   const [showManual, setShowManual] = useState(false);
@@ -72,7 +73,7 @@ function Checker() {
     if (fileBlob) {
       const link = document.createElement('a');
       link.href = window.URL.createObjectURL(fileBlob);
-      link.download = 'modified_document.docx'; // 원하는 파일명 설정
+      link.download = `${checkerName}`; // 전달받은 검사명으로 파일명 설정
       link.click();
       window.URL.revokeObjectURL(link.href);
       setShowDownloadPopup(false); // 팝업창 닫기
