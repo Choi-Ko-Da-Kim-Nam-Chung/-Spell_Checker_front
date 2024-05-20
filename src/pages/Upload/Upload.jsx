@@ -102,7 +102,7 @@ function Upload() {
               <div>사용설명서</div>
             </div>
           </div>
-          <div className="flex w-11/12 justify-center p-12 my-4 border-t-4 border-b-4 border-slate-700">
+          <div className="flex w-11/12 justify-around p-12 my-4 border-t-4 border-b-4 border-slate-700">
             {inputType === 'file' ? (
               <div className="w-1/2 flex justify-center">
                 <label className="w-80 h-80 bg-neutral-50 rounded-[10px] border border-dashed border-neutral-400 flex justify-center items-center cursor-pointer">
