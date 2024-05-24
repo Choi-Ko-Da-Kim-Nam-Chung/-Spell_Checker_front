@@ -17,16 +17,27 @@ function Upload() {
   const [checkerType, setCheckerType] = useState('');
   const [showManual, setShowManual] = useState(false);
   const [checkerName, setCheckerName] = useState(''); // 검사명 상태 관리
+  const [modalVisible, setModalVisible] = useState(false); // 확장자 관련 모달 상태 추가
+  const [modalMessage, setModalMessage] = useState(''); // 확장자 관련 모달 상태 메시지
 
   const textChange = e => {
     setText(e.target.value); // 텍스트 변경 처리
   };
 
   const handleFileChange = e => {
+    // 현재 지원하지 않는 확장자 메시지
     const file = e.target.files[0];
-    setSelectedFile(file); // 파일 변경 처리
     if (file) {
-      setCheckerName(file.name); // 파일명으로 검사명 설정
+      const supportedExtensions = ['docx', 'hwp'];
+      const extension = file.name.split('.').pop().toLowerCase();
+      if (supportedExtensions.includes(extension)) {
+        setSelectedFile(file);
+        setCheckerName(file.name);
+      } else {
+        setSelectedFile(null);
+        setModalMessage('현재 지원하지 않는 확장자입니다!');
+        setModalVisible(true);
+      }
     }
   };
 
@@ -66,6 +77,20 @@ function Upload() {
   return (
     <>
       <Nav />
+      {/* hwp, docx 외의 확장자 파일 업로드시 모달 창 등장 */}
+      {modalVisible && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-10 rounded-lg w-3/12 shadow-lg flex flex-col items-center">
+            <div className="text-lg text-center font-bold">{modalMessage}</div>
+            <button
+              onClick={() => setModalVisible(false)}
+              className="mt-8 py-2 px-4 border-2 border-black font-bold rounded-xl transition duration-300 ease-in-out hover:bg-gray-700 hover:text-white hover:border-transparent">
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
+      {/* 여기까지 모달창 코드 */}
       <div className="min-h-screen">
         <div className="w-10/12 bg-white rounded-xl shadow-md flex flex-col mx-auto items-center mt-24 p-4">
           <div className="text-3xl fontBold w-11/12 border-l-8 border-[#303A6E] pl-4 py-3 mt-4 flex justify-between">
