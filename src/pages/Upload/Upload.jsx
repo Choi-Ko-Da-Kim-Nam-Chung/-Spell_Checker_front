@@ -51,22 +51,29 @@ function Upload() {
 
   const handleStartCheck = async () => {
     if (inputType === 'file' && selectedFile && checkerType) {
-      setShowPopup(true); // 팝업 표시
+      setShowPopup(true); // 로딩 팝업 표시
       const formData = new FormData();
       formData.append('file', selectedFile);
       formData.append('type', checkerType);
 
       try {
-        const response = await axios.post('https://api.spell-checker.co.kr/grammar-check/scan', formData);
-        navigate('/checker', { state: { data: response.data, originalFile: selectedFile, checkerName } });
+        const response = await axios.post('http://34.64.157.92:8080/grammar-check/scan', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        const jsonData = response.data;
+        console.log('Received JSON data:');
+        console.log(JSON.stringify(jsonData, null, 2)); // JSON 데이터를 문자열로 변환하여 출력, 보기 좋게 포맷팅
+        navigate('/checker', { state: { data: jsonData, originalFile: selectedFile, checkerName } });
       } catch (error) {
-        console.error('Error:', error.message);
-        alert('파일과 검사 유형을 선택해주세요.');
+        console.error('Error uploading file:', error.message);
+        alert('Error uploading file. Please try again.');
       } finally {
-        setShowPopup(false); // 팝업 숨기기
+        setShowPopup(false);
       }
     } else {
-      alert('파일과 검사 유형을 선택해주세요.');
+      alert('Please select a file and check type.');
     }
   };
 
