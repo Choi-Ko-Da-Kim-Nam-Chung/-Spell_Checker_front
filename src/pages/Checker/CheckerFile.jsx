@@ -52,12 +52,101 @@ const CheckerFile = ({ data, onTextClick }) => {
     return elements;
   };
 
-  const renderContent = section => {
+  // 미주 및 각주 텍스트를 렌더링
+  const renderNoteText = (noteNum, noteType, notesData) => {
+    const noteIndex = noteNum - 1;
+    const noteElements = [];
+    if (noteType === 'FOOT_NOTE' && notesData && notesData.footNote && notesData.footNote[noteIndex]) {
+      notesData.footNote[noteIndex].forEach((item, index) => {
+        if (item.type === 'PARAGRAPH') {
+          noteElements.push(
+            <div key={index} style={{ fontSize: 'smaller', color: 'gray' }}>
+              {renderTextWithErrors(item.orgStr, item.errors)}
+            </div>,
+          );
+        } else if (item.type === 'TABLE') {
+          noteElements.push(
+            <table key={index} style={{ width: '100%', border: '1px solid gray', fontSize: 'smaller', color: 'gray' }}>
+              <tbody>
+                {item.table.map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {row.map((cell, cellIndex) => (
+                      <td
+                        key={cellIndex}
+                        colSpan={cell.colspan}
+                        rowSpan={cell.rowspan}
+                        style={{ border: '1px solid gray', padding: '4px' }}>
+                        {cell.ibody.map((bodyItem, bodyIndex) => (
+                          <div key={bodyIndex} style={{ fontSize: 'smaller', color: 'gray' }}>
+                            {renderTextWithErrors(bodyItem.orgStr, bodyItem.errors)}
+                          </div>
+                        ))}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>,
+          );
+        }
+      });
+    } else if (noteType === 'END_NOTE' && notesData && notesData.endNote && notesData.endNote[noteIndex]) {
+      notesData.endNote[noteIndex].forEach((item, index) => {
+        if (item.type === 'PARAGRAPH') {
+          noteElements.push(
+            <div key={index} style={{ fontSize: 'smaller', color: 'gray' }}>
+              {renderTextWithErrors(item.orgStr, item.errors)}
+            </div>,
+          );
+        } else if (item.type === 'TABLE') {
+          noteElements.push(
+            <table key={index} style={{ width: '100%', border: '1px solid gray', fontSize: 'smaller', color: 'gray' }}>
+              <tbody>
+                {item.table.map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {row.map((cell, cellIndex) => (
+                      <td
+                        key={cellIndex}
+                        colSpan={cell.colspan}
+                        rowSpan={cell.rowspan}
+                        style={{ border: '1px solid gray', padding: '4px' }}>
+                        {cell.ibody.map((bodyItem, bodyIndex) => (
+                          <div key={bodyIndex} style={{ fontSize: 'smaller', color: 'gray' }}>
+                            {renderTextWithErrors(bodyItem.orgStr, bodyItem.errors)}
+                          </div>
+                        ))}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>,
+          );
+        }
+      });
+    }
+    return noteElements;
+  };
+
+  const renderNotes = (notes, notesData) => {
+    return notes.map((note, index) => (
+      <div key={index} style={{ fontSize: 'smaller', color: 'gray' }}>
+        {renderNoteText(note.noteNum, note.noteInfoType, notesData)}
+      </div>
+    ));
+  };
+
+  const renderContent = (section, notesData) => {
     if (section.type === 'PARAGRAPH') {
-      return <p>{renderTextWithErrors(section.orgStr || '', section.errors)}</p>;
+      return (
+        <div>
+          <p>{renderTextWithErrors(section.orgStr || '', section.errors)}</p>
+          {section.notes && renderNotes(section.notes, notesData)}
+        </div>
+      );
     } else if (section.type === 'TABLE') {
       return (
-        <table style={{ width: '100%', border: '1px solid black', padding: '4px' }}>
+        <table style={{ width: '100%', border: '1px solid gray', padding: '4px' }}>
           <tbody>
             {section.table.map((row, rowIndex) => (
               <tr key={rowIndex}>
@@ -66,9 +155,9 @@ const CheckerFile = ({ data, onTextClick }) => {
                     key={cellIndex}
                     colSpan={cell.colspan}
                     rowSpan={cell.rowspan}
-                    style={{ border: '1px solid black', padding: '4px' }}>
+                    style={{ border: '1px solid gray', padding: '4px' }}>
                     {cell.ibody.map((item, itemIndex) => (
-                      <p key={itemIndex}>{renderContent(item)}</p>
+                      <div key={itemIndex}>{renderContent(item, notesData)}</div>
                     ))}
                   </td>
                 ))}
@@ -82,7 +171,7 @@ const CheckerFile = ({ data, onTextClick }) => {
   };
 
   const renderPage = data => {
-    return data.body.map((section, index) => <div key={index}>{renderContent(section)}</div>);
+    return data.body.map((section, index) => <div key={index}>{renderContent(section, data)}</div>);
   };
 
   return (

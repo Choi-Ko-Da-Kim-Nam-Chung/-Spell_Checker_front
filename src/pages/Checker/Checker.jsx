@@ -1,12 +1,11 @@
-import React, { useRef, useState, useEffect } from 'react';
-import Nav from '../../components/Nav'; // 네비게이션 컴포넌트
-import { useNavigate, useLocation } from 'react-router-dom'; // 페이지 이동
+import React, { useRef, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
+import Nav from '../../components/Nav';
 import CheckerFile from './CheckerFile';
 import CheckerModify from './CheckerModify';
 import { images } from '../../utils/images';
-
-import Predata2 from '../../utils/data2.json'; // 예시데이터 2
-import axios from 'axios';
+import Predata2 from '../../utils/data2.json';
 import { IoClose } from 'react-icons/io5';
 
 function Checker() {
@@ -15,12 +14,11 @@ function Checker() {
   const initialData = location.state?.data || Predata2; // 초기 데이터 로드
   const originalDocxFile = location.state?.originalFile; // 전달받은 원본 파일
   const checkerName = location.state?.checkerName || 'modified_document'; // 전달받은 검사명, 기본값 설정
-
   const [data, setData] = useState(addUniqueIds(initialData)); // 고유 ID 추가된 데이터로 초기화
   const [showManual, setShowManual] = useState(false);
   const [showDownloadPopup, setShowDownloadPopup] = useState(false);
   const [fileBlob, setFileBlob] = useState(null);
-  const [modifiedText, setModifiedText] = useState({}); // 추가된 상태
+  const [modifiedText, setModifiedText] = useState({});
 
   const fileRef = useRef(null);
   const modifyRef = useRef(null);
@@ -44,7 +42,7 @@ function Checker() {
   }
 
   const handleUpdateData = updatedData => {
-    setData(updatedData); // 상태 업데이트
+    setData(updatedData);
     setModifiedText(modifiedText => ({
       ...modifiedText,
       ...updatedData.modifiedText,
@@ -66,9 +64,9 @@ function Checker() {
   };
 
   const finishEdit = async () => {
-    const formData = new FormData(); // FormData 인스턴스 생성
-    formData.append('file', originalDocxFile); // 원본 docx 파일 추가
-    formData.append('data', JSON.stringify(data)); // 수정된 데이터를 문자열로 변환하여 추가
+    const formData = new FormData();
+    formData.append('file', originalDocxFile);
+    formData.append('data', JSON.stringify(data));
     console.log(data);
 
     try {
@@ -76,13 +74,13 @@ function Checker() {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        responseType: 'blob', // 파일 다운로드를 위한 설정
+        responseType: 'blob',
       });
-      console.log(response.data); // 성공 응답 로그 출력
+      console.log(response.data);
       setFileBlob(new Blob([response.data], { type: response.headers['content-type'] }));
-      setShowDownloadPopup(true); // 다운로드 팝업창 표시
+      setShowDownloadPopup(true);
     } catch (error) {
-      console.error('Error sending data:', error); // 에러 처리
+      console.error('Error sending data:', error);
     }
   };
 
@@ -90,20 +88,18 @@ function Checker() {
     if (fileBlob) {
       const link = document.createElement('a');
       link.href = window.URL.createObjectURL(fileBlob);
-      link.download = `${checkerName}`; // 전달받은 검사명으로 파일명 설정
+      link.download = `${checkerName}`;
       link.click();
       window.URL.revokeObjectURL(link.href);
-      setShowDownloadPopup(false); // 팝업창 닫기
+      setShowDownloadPopup(false);
     }
   };
 
-  // 파일 확장자에 따른 아이콘 결정
   const fileExtension = checkerName.split('.').pop().toLowerCase();
   const fileIcon = fileExtension === 'docx' ? images.DocxIcon : fileExtension === 'hwp' ? images.HwpIcon : null;
 
-  // 닫기 버튼 클릭 이벤트 핸들러
   const onClose = () => {
-    navigate(-1); // 업로드 페이지로 돌아감
+    navigate(-1);
   };
 
   return (
@@ -180,11 +176,13 @@ function Checker() {
             <div className="text-lg font-bold mb-4 text-center">파일을 다운하시겠습니까?</div>
             <div className="flex justify-center">
               <button
-                className="text-sm text-white py-2 px-4 bg-blue-500 fontBold rounded-2xl mr-2"
+                className="text-sm text-white py-2 px-4 bg-slate-700 fontBold rounded-2xl mr-2"
                 onClick={downloadFile}>
                 다운
               </button>
-              <button className="text-sm py-2 px-4 bg-gray-300 rounded-2xl" onClick={() => setShowDownloadPopup(false)}>
+              <button
+                className="text-sm py-2 px-4 bg-zinc-100 rounded-2xl border border-stone-300"
+                onClick={() => setShowDownloadPopup(false)}>
                 닫기
               </button>
             </div>

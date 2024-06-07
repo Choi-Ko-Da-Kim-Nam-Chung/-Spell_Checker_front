@@ -19,13 +19,14 @@ function Upload() {
   const [checkerName, setCheckerName] = useState(''); // 검사명 상태 관리
   const [modalVisible, setModalVisible] = useState(false); // 확장자 관련 모달 상태 추가
   const [modalMessage, setModalMessage] = useState(''); // 확장자 관련 모달 상태 메시지
+  const [fileSize, setFileSize] = useState('0'); // 파일 크기를 저장할 상태 변수
+  const [isCheckerNameValid, setIsCheckerNameValid] = useState(true); // 검사명 유효성 상태 관리
 
   const textChange = e => {
     setText(e.target.value); // 텍스트 변경 처리
   };
 
   const handleFileChange = e => {
-    // 현재 지원하지 않는 확장자 메시지
     const file = e.target.files[0];
     if (file) {
       const supportedExtensions = ['docx', 'hwp'];
@@ -33,12 +34,19 @@ function Upload() {
       if (supportedExtensions.includes(extension)) {
         setSelectedFile(file);
         setCheckerName(file.name);
+        // 파일 크기 상태 업데이트
+        const size = (file.size / 1024).toFixed(2); // 바이트를 킬로바이트로 변환하고 소수점 둘째 자리에서 반올림
+        setFileSize(size > 1024 ? `${(size / 1024).toFixed(2)}MB` : `${size}KB`); // 필요한 경우 킬로바이트를 메가바이트로 변환
       } else {
         setSelectedFile(null);
-        setModalMessage('현재 지원하지 않는 확장자입니다!');
+        setFileSize('0'); // 파일이 선택되지 않은 경우 파일 크기 리셋
+        setModalMessage('서식 유지 맞춤법 검사기는\n .docx, .hwp 파일만 지원하고 있습니다.');
         setModalVisible(true);
       }
+    } else {
+      setFileSize('0'); // 파일 선택이 없는 경우 파일 크기 리셋
     }
+    e.target.value = ''; // 파일 입력 필드 초기화
   };
 
   const handleTypeChange = e => {
@@ -46,12 +54,14 @@ function Upload() {
   };
 
   const handleCheckerNameChange = e => {
-    setCheckerName(e.target.value); // 검사명 변경 처리
+    const name = e.target.value;
+    setCheckerName(name); // 검사명 변경 처리
+    validateCheckerName(name);
   };
 
   const handleStartCheck = async () => {
-    if (inputType === 'file' && selectedFile && checkerType) {
-      setShowPopup(true); // 로딩 팝업 표시
+    if (inputType === 'file' && selectedFile && checkerType && isCheckerNameValid) {
+      setShowPopup(true); // 팝업 표시
       const formData = new FormData();
       formData.append('file', selectedFile);
       formData.append('type', checkerType);
@@ -77,6 +87,16 @@ function Upload() {
     }
   };
 
+  const validateCheckerName = name => {
+    if (name) {
+      const supportedExtensions = ['hwp', 'hwpx', 'docx', 'doc'];
+      const extension = name.split('.').pop().toLowerCase();
+      setIsCheckerNameValid(supportedExtensions.includes(extension));
+    } else {
+      setIsCheckerNameValid(true);
+    }
+  };
+
   const goBack = () => {
     navigate(-1); // 이전 페이지로 이동
   };
@@ -87,12 +107,12 @@ function Upload() {
       {/* hwp, docx 외의 확장자 파일 업로드시 모달 창 등장 */}
       {modalVisible && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-10 rounded-lg w-3/12 shadow-lg flex flex-col items-center">
-            <div className="text-lg text-center font-bold">{modalMessage}</div>
+          <div className="bg-white p-10 rounded-lg w-4/12 shadow-lg flex flex-col items-center">
+            <div className="text-xl text-center fontBold whitespace-pre-wrap">{modalMessage}</div>
             <button
               onClick={() => setModalVisible(false)}
-              className="mt-8 py-2 px-4 border-2 border-black font-bold rounded-xl transition duration-300 ease-in-out hover:bg-gray-700 hover:text-white hover:border-transparent">
-              닫기
+              className="mt-4 py-2 px-4 border-2 border-black font-bold rounded-xl transition duration-300 ease-in-out hover:bg-gray-700 hover:text-white hover:border-transparent">
+              확인
             </button>
           </div>
         </div>
@@ -142,10 +162,10 @@ function Upload() {
                   {selectedFile ? (
                     <div className="text-neutral-400 text-xl">{selectedFile.name}</div>
                   ) : (
-                    <>
-                      <img src="./assets/images/file_upload.png" alt="파일 업로드 아이콘" className="size-16" />
+                    <div className="flex flex-col">
+                      <img src="./assets/images/file_upload.png" alt="파일 업로드 아이콘" className="size-16 mx-auto" />
                       <div className="mt-5 text-neutral-400 text-xl">Drag file to upload</div>
-                    </>
+                    </div>
                   )}
                 </label>
               </div>
@@ -163,20 +183,25 @@ function Upload() {
                 <div className="text-right w-80">{`${text.length}/1000자`}</div>
               </div>
             )}
-            <div className="flex flex-col w-1/2">
+            <div className="flex flex-col w-1/2 my-auto">
               <div className="flex flex-col pb-10">
                 <div className="flex items-center">
                   <img src="./assets/images/list_disc.png" alt="리스트 원" className="mr-4" />
                   <span className="text-lg font-medium w-14">검사명</span>
                   <input
-                    className="p-1 h-8 bg-white border border-zinc-400 rounded w-7/12 ml-10"
+                    className="p-1 h-8 bg-white border border-zinc-400 rounded w-7/12 ml-[35px]"
                     value={checkerName}
                     onChange={handleCheckerNameChange}
                   />
                 </div>
-                <div className="ml-28 pl-2 mt-4 text-neutral-400 text-opacity-95 text-xs">
-                  * 파일 다운 시 작성하신 검사명으로 파일 명이 작성됩니다.
+                <div className="ml-28 pl-2 mt-1 text-neutral-400 text-opacity-95 text-xs">
+                  * 작성하신 검사명으로 파일이 다운됩니다.
                 </div>
+                {!isCheckerNameValid && checkerName && (
+                  <div className="ml-28 pl-2 mt-1 text-red-500 text-opacity-95 text-xs">
+                    * 확장자 명을 확인해주세요!
+                  </div>
+                )}
               </div>
               <div className="flex items-center pb-4">
                 <img src="./assets/images/list_disc.png" alt="리스트 원" className="mr-4" />
@@ -185,40 +210,21 @@ function Upload() {
                   <option value="">선택</option>
                   <option value="BUSAN_UNIV">부산대 맞춤법 검사기</option>
                   <option value="INCRUIT">인크루트 맞춤법 검사기</option>
-                  <option value="JOB_KOREA">잡코리아 맞춤법 검사기</option>
+                  <option value="JOB_KOREA">잡코리아 맞춤법 검사기 (현재 중단)</option>
                 </select>
               </div>
               <div className="flex items-center w-full mt-5">
                 <div className="flex items-center">
                   <img src="./assets/images/list_disc.png" alt="리스트 원" className="mr-4" />
-                  <span className="text-lg font-medium">검사설정</span>
-                  <div className="flex items-center">
-                    <div className="flex items-center ml-7">
-                      <input
-                        type="radio"
-                        id="file"
-                        name="inputType"
-                        value="file"
-                        checked={inputType === 'file'}
-                        onChange={e => setInputType(e.target.value)}
-                      />
-                      <label htmlFor="file" className="ml-2">
-                        파일
-                      </label>
+                  <span className="text-lg font-medium">파일 크기</span>
+                  <div className="flex items-center text-stone-500">
+                    <div
+                      className={`flex items-center ml-6 mr-1 ${
+                        parseFloat(fileSize) > 20.0 ? 'text-red-500' : 'text-stone-500'
+                      }`}>
+                      {fileSize}
                     </div>
-                    <div className="flex items-center ml-20">
-                      <input
-                        type="radio"
-                        id="text"
-                        name="inputType"
-                        value="text"
-                        checked={inputType === 'text'}
-                        onChange={e => setInputType(e.target.value)}
-                      />
-                      <label htmlFor="text" className="ml-2">
-                        텍스트
-                      </label>
-                    </div>
+                    <div> / 20.0MB</div>
                   </div>
                 </div>
               </div>
@@ -228,11 +234,9 @@ function Upload() {
                   <br />
                 </div>
                 <div>
-                  &nbsp;허용 확장자 : *.docx, *.txt, *.hwp
+                  &nbsp;허용 확장자 : *.doc, *.docx, *.hwp, *.hwpx
                   <br />
-                  &nbsp;문서 첨부 제한 : 0Byte/ 100.0MB
-                  <br />
-                  &nbsp;파일 제한 크기 : 100MB
+                  &nbsp;파일 제한 버전 : 한글2018 버전 이하
                   <br />
                 </div>
               </div>

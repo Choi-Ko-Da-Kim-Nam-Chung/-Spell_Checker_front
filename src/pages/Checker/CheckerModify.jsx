@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaRegCheckCircle } from 'react-icons/fa';
 
 const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
   const [errors, setErrors] = useState([]);
@@ -8,35 +9,41 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
       return;
     }
 
-    const extractParagraphs = (item, paragraphs = []) => {
-      if (item.type === 'PARAGRAPH') {
-        paragraphs.push(item);
+    const extractErrors = (item, errors = []) => {
+      if (item.type === 'PARAGRAPH' && item.errors) {
+        item.errors.forEach(error => {
+          errors.push({
+            paragraphId: item.id,
+            originalText: error.orgStr,
+            replacementOptions: error.candWord || [],
+            selectedReplacement: error.candWord && error.candWord.length === 1 ? error.candWord[0] : '',
+            userText: '',
+            checkedSection: null,
+            start: error.start,
+            end: error.end,
+            errorIdx: error.errorIdx,
+          });
+        });
       }
       if (item.ibody) {
-        item.ibody.forEach(subItem => extractParagraphs(subItem, paragraphs));
+        item.ibody.forEach(subItem => extractErrors(subItem, errors));
       }
       if (item.table) {
-        item.table.forEach(row => row.forEach(cell => extractParagraphs(cell, paragraphs)));
+        item.table.forEach(row => row.forEach(cell => extractErrors(cell, errors)));
       }
-      return paragraphs;
+      if (item.notes) {
+        item.notes.forEach(note => {
+          const noteIndex = note.noteNum - 1;
+          const noteType = note.noteInfoType === 'FOOT_NOTE' ? 'footNote' : 'endNote';
+          if (data[noteType] && data[noteType][noteIndex]) {
+            data[noteType][noteIndex].forEach(noteItem => extractErrors(noteItem, errors));
+          }
+        });
+      }
+      return errors;
     };
 
-    const paragraphs = extractParagraphs({ ibody: data.body });
-    const allErrors = paragraphs
-      .filter(p => p.errors && p.errors.length > 0)
-      .flatMap(p =>
-        p.errors.map(error => ({
-          paragraphId: p.id,
-          originalText: error.orgStr,
-          replacementOptions: error.candWord || [],
-          selectedReplacement: error.candWord && error.candWord.length === 1 ? error.candWord[0] : '',
-          userText: '',
-          checkedSection: null,
-          start: error.start,
-          end: error.end,
-          errorIdx: error.errorIdx,
-        })),
-      );
+    const allErrors = extractErrors({ ibody: data.body });
 
     setErrors(allErrors);
   }, [data]);
@@ -99,6 +106,16 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
         if (section.table) {
           section.table.forEach(row => row.forEach(cell => updateContent(cell.ibody)));
         }
+
+        if (section.notes) {
+          section.notes.forEach(note => {
+            const noteIndex = note.noteNum - 1;
+            const noteType = note.noteInfoType === 'FOOT_NOTE' ? 'footNote' : 'endNote';
+            if (data[noteType] && data[noteType][noteIndex]) {
+              data[noteType][noteIndex].forEach(noteItem => updateContent([noteItem]));
+            }
+          });
+        }
       });
     };
 
@@ -132,15 +149,12 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
               <div className="flex items-center my-2">
                 <div className="text-black fontBold mr-5">기존 내용</div>
                 <div className="fontBold text-red-500">{error.originalText}</div>
-                <img
-                  src={
-                    error.checkedSection === 'original'
-                      ? '/assets/images/after_check.png'
-                      : '/assets/images/before_check.png'
-                  }
-                  alt="체크 표시"
+                <FaRegCheckCircle
+                  size="18"
+                  className={`cursor-pointer ml-auto ${
+                    error.checkedSection === 'original' ? 'text-green-500' : 'text-gray-300'
+                  }`}
                   onClick={() => toggleCheck(index, 'original')}
-                  className="cursor-pointer ml-auto w-4 h-4"
                 />
               </div>
               <div className="flex items-center my-4">
@@ -157,29 +171,23 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
                         </option>
                       ))}
                     </select>
-                    <img
-                      src={
-                        error.checkedSection === 'replacement'
-                          ? '/assets/images/after_check.png'
-                          : '/assets/images/before_check.png'
-                      }
-                      alt="체크 표시"
+                    <FaRegCheckCircle
+                      size="18"
+                      className={`cursor-pointer ml-auto ${
+                        error.checkedSection === 'replacement' ? 'text-green-500' : 'text-gray-300'
+                      }`}
                       onClick={() => toggleCheck(index, 'replacement')}
-                      className="cursor-pointer ml-auto w-4 h-4"
                     />
                   </>
                 ) : (
                   <>
                     <div className="fontBold">{error.replacementOptions[0]}</div>
-                    <img
-                      src={
-                        error.checkedSection === 'replacement'
-                          ? '/assets/images/after_check.png'
-                          : '/assets/images/before_check.png'
-                      }
-                      alt="체크 표시"
+                    <FaRegCheckCircle
+                      size="18"
+                      className={`cursor-pointer ml-auto ${
+                        error.checkedSection === 'replacement' ? 'text-[#5e75f1]' : 'text-gray-300'
+                      }`}
                       onClick={() => toggleCheck(index, 'replacement')}
-                      className="cursor-pointer ml-auto w-4 h-4"
                     />
                   </>
                 )}
@@ -193,15 +201,12 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
                   value={error.userText}
                   onChange={e => handleUserTextChange(index, e.target.value)}
                 />
-                <img
-                  src={
-                    error.checkedSection === 'user'
-                      ? '/assets/images/after_check.png'
-                      : '/assets/images/before_check.png'
-                  }
-                  alt="체크 표시"
+                <FaRegCheckCircle
+                  size="18"
+                  className={`cursor-pointer ml-auto ${
+                    error.checkedSection === 'user' ? 'text-green-500' : 'text-gray-300'
+                  }`}
                   onClick={() => toggleCheck(index, 'user')}
-                  className="cursor-pointer ml-auto w-4 h-4"
                 />
               </div>
               <div className="flex justify-end">
