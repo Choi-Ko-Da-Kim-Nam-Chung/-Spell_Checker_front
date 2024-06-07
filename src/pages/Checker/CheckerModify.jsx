@@ -3,13 +3,11 @@ import React, { useState, useEffect } from 'react';
 const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
   const [errors, setErrors] = useState([]);
 
-  // 데이터가 변경될 때 단락과 오류를 추출
   useEffect(() => {
     if (!data || !data.body) {
       return;
     }
 
-    // 재귀적으로 단락을 추출
     const extractParagraphs = (item, paragraphs = []) => {
       if (item.type === 'PARAGRAPH') {
         paragraphs.push(item);
@@ -36,13 +34,13 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
           checkedSection: null,
           start: error.start,
           end: error.end,
+          errorIdx: error.errorIdx,
         })),
       );
 
     setErrors(allErrors);
   }, [data]);
 
-  // 드롭다운에서 교체 옵션을 선택
   const handleReplacementSelection = (index, selectedOption) => {
     setErrors(
       errors.map((error, i) =>
@@ -51,12 +49,10 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
     );
   };
 
-  // 사용자가 텍스트 입력을 변경할 때 호출
   const handleUserTextChange = (index, text) => {
     setErrors(errors.map((error, i) => (i === index ? { ...error, userText: text, checkedSection: 'user' } : error)));
   };
 
-  // 체크 섹션을 원본, 교체 및 사용자 입력 간에 전환하는 함수
   const toggleCheck = (index, section) => {
     setErrors(
       errors.map((error, i) =>
@@ -65,7 +61,6 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
     );
   };
 
-  // 사용자가 선택하고 입력한 내용에 따라 데이터를 변경
   const applyChanges = () => {
     const updatedData = JSON.parse(JSON.stringify(data)); // 데이터 깊은 복사
 
@@ -75,31 +70,28 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
       body.forEach(section => {
         if (section.type === 'PARAGRAPH' && section.errors && section.errors.length > 0) {
           section.errors.forEach(error => {
-            const errorToApply = errors.find(e => e.paragraphId === section.id && e.start === error.start);
+            const errorToApply = errors.find(
+              e => e.paragraphId === section.id && e.start === error.start && e.errorIdx === error.errorIdx,
+            );
             if (errorToApply) {
-              const originalText = section.orgStr;
-              const beforeText = originalText.substring(0, error.start);
-              const afterText = originalText.substring(error.end);
               let newText;
 
               if (errorToApply.checkedSection === 'original') {
                 newText = errorToApply.originalText;
               } else if (errorToApply.checkedSection === 'replacement') {
                 newText = errorToApply.selectedReplacement;
-                error.replaceStr = newText; // 수정된 replaceStr를 반영
+                error.replaceStr = newText;
               } else if (errorToApply.checkedSection === 'user') {
                 newText = errorToApply.userText;
                 if (!newText.trim()) {
                   isValid = false;
                 }
-                error.replaceStr = newText; // 사용자가 직접 입력한 값을 replaceStr로 설정
+                error.replaceStr = newText;
               } else {
-                newText = originalText.substring(error.start, error.end);
+                newText = error.orgStr;
               }
 
-              section.orgStr = beforeText + newText + afterText;
               error.end = error.start + newText.length;
-              error.checkedSection = errorToApply.checkedSection;
             }
           });
         }
@@ -118,6 +110,7 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
       onUpdateData(updatedData);
     }
   };
+
   return (
     <div className="flex flex-col h-[60vh] w-[30%]">
       <div className="bg-slate-700 h-14 pb-3 sticky top-0">
@@ -131,10 +124,10 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
         ) : (
           errors.map((error, index) => (
             <div
-              key={index}
-              id={`modifyBox-${error.start}`}
+              key={`${error.start}-${error.errorIdx}`}
+              id={`modifyBox-${error.start}-${error.errorIdx}`}
               className="modifyBox px-4 pb-1 text-sm"
-              onClick={() => onBoxClick(error.start)}
+              onClick={() => onBoxClick(error.start, error.errorIdx)}
               style={{ cursor: 'pointer' }}>
               <div className="flex items-center my-2">
                 <div className="text-black fontBold mr-5">기존 내용</div>

@@ -13,11 +13,10 @@ function Checker() {
   const navigate = useNavigate();
   const location = useLocation();
   const initialData = location.state?.data || Predata2; // 초기 데이터 로드
-  // const originalFile = location.state.originalFile; // 업로드한 원본 파일
   const originalDocxFile = location.state?.originalFile; // 전달받은 원본 파일
   const checkerName = location.state?.checkerName || 'modified_document'; // 전달받은 검사명, 기본값 설정
 
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState(addUniqueIds(initialData)); // 고유 ID 추가된 데이터로 초기화
   const [showManual, setShowManual] = useState(false);
   const [showDownloadPopup, setShowDownloadPopup] = useState(false);
   const [fileBlob, setFileBlob] = useState(null);
@@ -25,6 +24,24 @@ function Checker() {
 
   const fileRef = useRef(null);
   const modifyRef = useRef(null);
+
+  function addUniqueIds(data) {
+    // 고유 ID 추가 함수 (errors의 오류텍스트 식별)
+    let idCounter = 0;
+
+    function addIdToSection(section) {
+      section.id = idCounter++;
+      if (section.ibody) {
+        section.ibody.forEach(subSection => addIdToSection(subSection));
+      }
+      if (section.table) {
+        section.table.forEach(row => row.forEach(cell => addIdToSection(cell)));
+      }
+    }
+
+    data.body.forEach(section => addIdToSection(section));
+    return data;
+  }
 
   const handleUpdateData = updatedData => {
     setData(updatedData); // 상태 업데이트
@@ -34,15 +51,15 @@ function Checker() {
     }));
   };
 
-  const handleTextClick = start => {
-    const modifyBox = document.getElementById(`modifyBox-${start}`);
+  const handleTextClick = (start, errorIdx) => {
+    const modifyBox = document.getElementById(`modifyBox-${start}-${errorIdx}`);
     if (modifyBox) {
       modifyBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
 
-  const handleBoxClick = start => {
-    const errorText = document.getElementById(`errorText-${start}`);
+  const handleBoxClick = (start, errorIdx) => {
+    const errorText = document.getElementById(`errorText-${start}-${errorIdx}`);
     if (errorText) {
       errorText.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
@@ -55,7 +72,7 @@ function Checker() {
     console.log(data);
 
     try {
-      const response = await axios.post('https://api.spell-checker.co.kr/grammar-check/apply', formData, {
+      const response = await axios.post('http://34.64.157.92:8080/grammar-check/apply', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
