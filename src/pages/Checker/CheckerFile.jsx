@@ -13,6 +13,7 @@ const CheckerFile = ({ data, onTextClick }) => {
 
     errors.forEach((error, index) => {
       const color = error.replaceStr ? '#5e75f1' : 'red';
+      const displayText = error.replaceStr || text.substring(error.start, error.end);
 
       if (error.start > lastIndex) {
         elements.push(
@@ -28,7 +29,7 @@ const CheckerFile = ({ data, onTextClick }) => {
           id={`errorText-${error.start}-${error.errorIdx}`}
           style={{ color, fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'pre-wrap' }}
           onClick={() => onTextClick(error.start, error.errorIdx)}>
-          {error.replaceStr || text.substring(error.start, error.end)}
+          {displayText}
         </span>,
       );
 
@@ -52,7 +53,6 @@ const CheckerFile = ({ data, onTextClick }) => {
     return elements;
   };
 
-  // 미주 및 각주 텍스트를 렌더링
   const renderNoteText = (noteNum, noteType, notesData) => {
     const noteIndex = noteNum - 1;
     const noteElements = [];

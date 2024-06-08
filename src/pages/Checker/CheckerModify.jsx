@@ -70,7 +70,6 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
 
   const applyChanges = () => {
     const updatedData = JSON.parse(JSON.stringify(data)); // 데이터 깊은 복사
-
     let isValid = true;
 
     const updateContent = body => {
@@ -82,9 +81,9 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
             );
             if (errorToApply) {
               let newText;
-
               if (errorToApply.checkedSection === 'original') {
                 newText = errorToApply.originalText;
+                error.replaceStr = newText; // 이 부분을 기존 텍스트로 업데이트
               } else if (errorToApply.checkedSection === 'replacement') {
                 newText = errorToApply.selectedReplacement;
                 error.replaceStr = newText;
@@ -185,7 +184,7 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
                     <FaRegCheckCircle
                       size="18"
                       className={`cursor-pointer ml-auto ${
-                        error.checkedSection === 'replacement' ? 'text-[#5e75f1]' : 'text-gray-300'
+                        error.checkedSection === 'replacement' ? 'text-green-500' : 'text-gray-300'
                       }`}
                       onClick={() => toggleCheck(index, 'replacement')}
                     />
