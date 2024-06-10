@@ -10,6 +10,7 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
     }
 
     const extractErrors = (item, errors = []) => {
+      // 에러 텍스트를 추출하는 함수
       if (item.type === 'PARAGRAPH' && item.errors) {
         item.errors.forEach(error => {
           errors.push({
@@ -72,9 +73,18 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
     const updatedData = JSON.parse(JSON.stringify(data)); // 데이터 깊은 복사
     let isValid = true;
 
+    const updateError = (section, error, newText, offset) => {
+      // 특정 에러 텍스트를 새로운 텍스트로 대체하는 함수
+      section.orgStr =
+        section.orgStr.slice(0, error.start + offset) + newText + section.orgStr.slice(error.end + offset);
+    };
+
     const updateContent = body => {
+      // 데이터 본문을 순회하면서 에러 정보를 업데이트하는 함수
       body.forEach(section => {
         if (section.type === 'PARAGRAPH' && section.errors && section.errors.length > 0) {
+          let offset = 0;
+          const updatedErrors = [];
           section.errors.forEach(error => {
             const errorToApply = errors.find(
               e => e.paragraphId === section.id && e.start === error.start && e.errorIdx === error.errorIdx,
@@ -83,7 +93,7 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
               let newText;
               if (errorToApply.checkedSection === 'original') {
                 newText = errorToApply.originalText;
-                error.replaceStr = newText; // 이 부분을 기존 텍스트로 업데이트
+                error.replaceStr = newText;
               } else if (errorToApply.checkedSection === 'replacement') {
                 newText = errorToApply.selectedReplacement;
                 error.replaceStr = newText;
@@ -97,9 +107,26 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
                 newText = error.orgStr;
               }
 
-              error.end = error.start + newText.length;
+              // 기존 에러 텍스트 부분만 바뀌도록 처리
+              updateError(section, error, newText, offset);
+
+              // 오프셋을 업데이트하여 다음 에러 위치를 보정
+              const lengthChange = newText.length - (error.end - error.start);
+              offset += lengthChange;
+
+              // 수정된 에러를 리스트에 추가
+              updatedErrors.push({
+                ...error,
+                start: error.start + offset - lengthChange, // offset 적용 전 위치
+                end: error.start + newText.length + offset - lengthChange,
+              });
+            } else {
+              // 기존의 에러를 그대로 리스트에 추가
+              updatedErrors.push({ ...error, start: error.start + offset, end: error.end + offset });
             }
           });
+          // 섹션의 에러를 업데이트
+          section.errors = updatedErrors;
         }
 
         if (section.table) {

@@ -52,7 +52,6 @@ const CheckerFile = ({ data, onTextClick }) => {
 
     return elements;
   };
-
   const renderNoteText = (noteNum, noteType, notesData) => {
     const noteIndex = noteNum - 1;
     const noteElements = [];
