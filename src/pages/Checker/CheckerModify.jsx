@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaRegCheckCircle } from 'react-icons/fa';
 
 const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
   const [errors, setErrors] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+  const isApplyingChanges = useRef(false);
 
   useEffect(() => {
-    if (!data || !data.body) {
-      return;
-    }
+    if (!data || !data.body) return;
 
     const extractErrors = (item, errors = []) => {
-      // 에러 텍스트를 추출하는 함수
       if (item.type === 'PARAGRAPH' && item.errors) {
         item.errors.forEach(error => {
           errors.push({
             paragraphId: item.id,
             originalText: error.orgStr,
             replacementOptions: error.candWord || [],
-            selectedReplacement: error.candWord && error.candWord.length === 1 ? error.candWord[0] : '',
+            selectedReplacement: error.candWord?.length === 1 ? error.candWord[0] : '',
             userText: '',
             checkedSection: null,
             start: error.start,
             end: error.end,
             errorIdx: error.errorIdx,
+            revisions: 0, // 초기 수정 횟수
           });
         });
       }
@@ -44,43 +44,71 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
       return errors;
     };
 
-    const allErrors = extractErrors({ ibody: data.body });
-
-    setErrors(allErrors);
-  }, [data]);
+    setErrors(extractErrors({ ibody: data.body }));
+  }, [data, refresh]);
 
   const handleReplacementSelection = (index, selectedOption) => {
-    setErrors(
-      errors.map((error, i) =>
-        i === index ? { ...error, selectedReplacement: selectedOption, checkedSection: 'replacement' } : error,
+    if (isApplyingChanges.current) return;
+    setErrors(prevErrors =>
+      prevErrors.map((error, i) =>
+        i === index
+          ? {
+              ...error,
+              selectedReplacement: selectedOption,
+              checkedSection: 'replacement',
+              revisions: error.revisions + 1, // 수정 횟수 증가
+            }
+          : error,
       ),
     );
   };
 
   const handleUserTextChange = (index, text) => {
-    setErrors(errors.map((error, i) => (i === index ? { ...error, userText: text, checkedSection: 'user' } : error)));
+    if (isApplyingChanges.current) return;
+    setErrors(prevErrors =>
+      prevErrors.map((error, i) =>
+        i === index
+          ? {
+              ...error,
+              userText: text,
+              checkedSection: 'user',
+              revisions: error.revisions + 1, // 수정 횟수 증가
+            }
+          : error,
+      ),
+    );
   };
 
   const toggleCheck = (index, section) => {
-    setErrors(
-      errors.map((error, i) =>
-        i === index ? { ...error, checkedSection: error.checkedSection === section ? null : section } : error,
+    if (isApplyingChanges.current) return;
+    setErrors(prevErrors =>
+      prevErrors.map((error, i) =>
+        i === index
+          ? {
+              ...error,
+              checkedSection: error.checkedSection === section ? null : section,
+              revisions: error.revisions + 1, // 수정 횟수 증가
+            }
+          : error,
       ),
     );
   };
 
   const applyChanges = () => {
-    const updatedData = JSON.parse(JSON.stringify(data)); // 데이터 깊은 복사
+    if (isApplyingChanges.current) return;
+    isApplyingChanges.current = true;
+
+    const updatedData = JSON.parse(JSON.stringify(data));
     let isValid = true;
 
+    const appliedModifications = new Set();
+
     const updateError = (section, error, newText, offset) => {
-      // 특정 에러 텍스트를 새로운 텍스트로 대체하는 함수
       section.orgStr =
         section.orgStr.slice(0, error.start + offset) + newText + section.orgStr.slice(error.end + offset);
     };
 
     const updateContent = body => {
-      // 데이터 본문을 순회하면서 에러 정보를 업데이트하는 함수
       body.forEach(section => {
         if (section.type === 'PARAGRAPH' && section.errors && section.errors.length > 0) {
           let offset = 0;
@@ -89,7 +117,8 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
             const errorToApply = errors.find(
               e => e.paragraphId === section.id && e.start === error.start && e.errorIdx === error.errorIdx,
             );
-            if (errorToApply) {
+            if (errorToApply && !appliedModifications.has(`${section.id}-${error.start}-${error.errorIdx}`)) {
+              appliedModifications.add(`${section.id}-${error.start}-${error.errorIdx}`);
               let newText;
               if (errorToApply.checkedSection === 'original') {
                 newText = errorToApply.originalText;
@@ -107,25 +136,20 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
                 newText = error.orgStr;
               }
 
-              // 기존 에러 텍스트 부분만 바뀌도록 처리
               updateError(section, error, newText, offset);
 
-              // 오프셋을 업데이트하여 다음 에러 위치를 보정
               const lengthChange = newText.length - (error.end - error.start);
               offset += lengthChange;
 
-              // 수정된 에러를 리스트에 추가
               updatedErrors.push({
                 ...error,
-                start: error.start + offset - lengthChange, // offset 적용 전 위치
+                start: error.start + offset - lengthChange,
                 end: error.start + newText.length + offset - lengthChange,
               });
             } else {
-              // 기존의 에러를 그대로 리스트에 추가
               updatedErrors.push({ ...error, start: error.start + offset, end: error.end + offset });
             }
           });
-          // 섹션의 에러를 업데이트
           section.errors = updatedErrors;
         }
 
@@ -149,8 +173,11 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
 
     if (!isValid) {
       alert('직접 수정할 내용을 입력해주세요.');
+      isApplyingChanges.current = false;
     } else {
       onUpdateData(updatedData);
+      setRefresh(prev => !prev);
+      isApplyingChanges.current = false;
     }
   };
 
@@ -167,7 +194,7 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
         ) : (
           errors.map((error, index) => (
             <div
-              key={`${error.start}-${error.errorIdx}`}
+              key={`${error.start}-${error.errorIdx}-${index}`}
               id={`modifyBox-${error.start}-${error.errorIdx}`}
               className="modifyBox px-4 pb-1 text-sm"
               onClick={() => onBoxClick(error.start, error.errorIdx)}

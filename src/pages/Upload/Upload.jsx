@@ -67,7 +67,7 @@ function Upload() {
       formData.append('type', checkerType);
 
       try {
-        const response = await axios.post('http://34.64.157.92:8080/grammar-check/scan', formData, {
+        const response = await axios.post('http://localhost:8080/grammar-check/scan', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },

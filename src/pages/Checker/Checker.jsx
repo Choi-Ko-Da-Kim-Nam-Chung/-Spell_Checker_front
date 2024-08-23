@@ -70,7 +70,7 @@ function Checker() {
     console.log(data);
 
     try {
-      const response = await axios.post('http://34.64.157.92:8080/grammar-check/apply', formData, {
+      const response = await axios.post('http://localhost:8080/grammar-check/apply', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
