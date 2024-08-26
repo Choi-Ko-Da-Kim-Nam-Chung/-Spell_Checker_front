@@ -2,30 +2,36 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaRegCheckCircle } from 'react-icons/fa';
 
 const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
-  const [errors, setErrors] = useState([]);
-  const [refresh, setRefresh] = useState(false);
-  const isApplyingChanges = useRef(false);
+  const [errors, setErrors] = useState([]); // 오류 목록을 상태로 관리
+  const [refresh, setRefresh] = useState(false); // 데이터 갱신 여부를 상태로 관리
+  const isApplyingChanges = useRef(false); // 변경 적용 중 여부를 관리하는 Ref
 
+  // 데이터가 업데이트될 때마다 오류 목록을 추출하는 useEffect
   useEffect(() => {
     if (!data || !data.body) return;
 
+    // 데이터를 순회하며 오류 정보를 추출하는 함수
     const extractErrors = (item, errors = []) => {
+      // PARAGRAPH 유형의 데이터를 처리
       if (item.type === 'PARAGRAPH' && item.errors) {
         item.errors.forEach(error => {
           errors.push({
             paragraphId: item.id,
-            originalText: error.orgStr,
-            replacementOptions: error.candWord || [],
-            selectedReplacement: error.candWord?.length === 1 ? error.candWord[0] : '',
-            userText: '',
-            checkedSection: null,
+            originalText: error.orgStr, // 원본 텍스트
+            replacementOptions: error.candWord || [], // 추천 수정 옵션
+            selectedReplacement: error.candWord?.length === 1 ? error.candWord[0] : '', // 추천 수정 자동 선택
+            userText: '', // 사용자가 입력한 수정 텍스트
+            checkedSection: null, // 현재 선택된 수정 섹션
             start: error.start,
             end: error.end,
+            originalStart: error.start, // 원본 인덱스를 유지
+            originalEnd: error.end, // 원본 인덱스를 유지
             errorIdx: error.errorIdx,
-            revisions: 0, // 초기 수정 횟수
+            replaceStr: error.replaceStr || null, // replaceStr 초기화
           });
         });
       }
+      // 내부 섹션, 테이블, 주석 등을 재귀적으로 처리
       if (item.ibody) {
         item.ibody.forEach(subItem => extractErrors(subItem, errors));
       }
@@ -44,9 +50,11 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
       return errors;
     };
 
+    // 추출된 오류 목록을 상태로 저장
     setErrors(extractErrors({ ibody: data.body }));
   }, [data, refresh]);
 
+  // 사용자가 추천 수정 옵션을 선택했을 때 처리하는 함수
   const handleReplacementSelection = (index, selectedOption) => {
     if (isApplyingChanges.current) return;
     setErrors(prevErrors =>
@@ -55,14 +63,15 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
           ? {
               ...error,
               selectedReplacement: selectedOption,
-              checkedSection: 'replacement',
-              revisions: error.revisions + 1, // 수정 횟수 증가
+              replaceStr: selectedOption, // replaceStr 업데이트
+              checkedSection: 'replacement', // 선택된 섹션을 업데이트
             }
           : error,
       ),
     );
   };
 
+  // 사용자가 직접 수정 텍스트를 입력했을 때 처리하는 함수
   const handleUserTextChange = (index, text) => {
     if (isApplyingChanges.current) return;
     setErrors(prevErrors =>
@@ -71,14 +80,15 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
           ? {
               ...error,
               userText: text,
-              checkedSection: 'user',
-              revisions: error.revisions + 1, // 수정 횟수 증가
+              replaceStr: text, // replaceStr 업데이트
+              checkedSection: 'user', // 선택된 섹션을 'user'로 업데이트
             }
           : error,
       ),
     );
   };
 
+  // 수정 섹션의 선택을 토글하는 함수
   const toggleCheck = (index, section) => {
     if (isApplyingChanges.current) return;
     setErrors(prevErrors =>
@@ -87,72 +97,55 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
           ? {
               ...error,
               checkedSection: error.checkedSection === section ? null : section,
-              revisions: error.revisions + 1, // 수정 횟수 증가
             }
           : error,
       ),
     );
   };
 
+  // 변경 사항을 적용하는 함수
   const applyChanges = () => {
     if (isApplyingChanges.current) return;
     isApplyingChanges.current = true;
 
+    // 데이터를 깊게 복사하여 작업
     const updatedData = JSON.parse(JSON.stringify(data));
     let isValid = true;
 
     const appliedModifications = new Set();
 
-    const updateError = (section, error, newText, offset) => {
-      section.orgStr =
-        section.orgStr.slice(0, error.start + offset) + newText + section.orgStr.slice(error.end + offset);
-    };
-
+    // 본문 내용을 순회하며 오류를 수정
     const updateContent = body => {
       body.forEach(section => {
         if (section.type === 'PARAGRAPH' && section.errors && section.errors.length > 0) {
-          let offset = 0;
-          const updatedErrors = [];
           section.errors.forEach(error => {
             const errorToApply = errors.find(
               e => e.paragraphId === section.id && e.start === error.start && e.errorIdx === error.errorIdx,
             );
+
             if (errorToApply && !appliedModifications.has(`${section.id}-${error.start}-${error.errorIdx}`)) {
               appliedModifications.add(`${section.id}-${error.start}-${error.errorIdx}`);
-              let newText;
+
+              // 사용자가 선택한 수정사항에 따라 replaceStr 업데이트
               if (errorToApply.checkedSection === 'original') {
-                newText = errorToApply.originalText;
-                error.replaceStr = newText;
+                error.replaceStr = errorToApply.originalText;
               } else if (errorToApply.checkedSection === 'replacement') {
-                newText = errorToApply.selectedReplacement;
-                error.replaceStr = newText;
+                error.replaceStr = errorToApply.selectedReplacement;
               } else if (errorToApply.checkedSection === 'user') {
-                newText = errorToApply.userText;
-                if (!newText.trim()) {
+                error.replaceStr = errorToApply.userText;
+                if (!errorToApply.userText.trim()) {
                   isValid = false;
                 }
-                error.replaceStr = newText;
-              } else {
-                newText = error.orgStr;
               }
 
-              updateError(section, error, newText, offset);
-
-              const lengthChange = newText.length - (error.end - error.start);
-              offset += lengthChange;
-
-              updatedErrors.push({
-                ...error,
-                start: error.start + offset - lengthChange,
-                end: error.start + newText.length + offset - lengthChange,
-              });
-            } else {
-              updatedErrors.push({ ...error, start: error.start + offset, end: error.end + offset });
+              // start, end 인덱스를 원본으로 유지
+              error.start = errorToApply.originalStart;
+              error.end = errorToApply.originalEnd;
             }
           });
-          section.errors = updatedErrors;
         }
 
+        // 테이블, 주석 등의 섹션을 재귀적으로 처리
         if (section.table) {
           section.table.forEach(row => row.forEach(cell => updateContent(cell.ibody)));
         }
@@ -169,14 +162,16 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
       });
     };
 
+    // 본문 내용 업데이트
     updateContent(updatedData.body);
 
+    // 유효하지 않은 입력이 있는 경우 경고
     if (!isValid) {
       alert('직접 수정할 내용을 입력해주세요.');
       isApplyingChanges.current = false;
     } else {
-      onUpdateData(updatedData);
-      setRefresh(prev => !prev);
+      onUpdateData(updatedData); // 수정된 데이터 전달
+      setRefresh(prev => !prev); // 데이터 갱신
       isApplyingChanges.current = false;
     }
   };
