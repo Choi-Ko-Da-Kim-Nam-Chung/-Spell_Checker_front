@@ -118,7 +118,7 @@ function Upload() {
       )}
       {/* 여기까지 모달창 코드 */}
       <div className="min-h-screen">
-        <div className="flex flex-col items-center w-10/12 p-4 mx-auto mt-24 bg-white shadow-md rounded-xl">
+        <div className="flex flex-col items-center w-10/12 p-4 mx-auto mt-12 bg-white shadow-md lg:mt-24 rounded-xl">
           <div className="text-xl lg:text-3xl fontBold w-11/12 border-l-[6px] lg:border-l-8 border-[#303A6E] pl-2 lg:pl-4 py-2 lg:py-3 mt-4 flex justify-between">
             문서 업로드
           </div>
@@ -158,7 +158,7 @@ function Upload() {
               <label className="w-40 h-40 lg:w-80 lg:h-80 bg-neutral-50 rounded-[10px] border border-dashed border-neutral-400 flex justify-center items-center cursor-pointer mb-12 lg:mb-0">
                 <input type="file" className="hidden" onChange={handleFileChange} />
                 {selectedFile ? (
-                  <div className="text-xl text-neutral-400">{selectedFile.name}</div>
+                  <div className="text-sm truncate lg:text-xl text-neutral-400">{selectedFile.name}</div>
                 ) : (
                   <div className="flex flex-col">
                     <img
@@ -177,7 +177,7 @@ function Upload() {
                   <img src="./assets/images/list_disc.png" alt="리스트 원" className="w-[6px] lg:w-[8px] mr-4" />
                   <div className="w-24 text-sm font-medium lg:text-lg whitespace-nowrap">검사명</div>
                   <input
-                    className="h-6 w-[180px] p-1 bg-white border rounded lg:h-8 border-zinc-400 lg:w-7/12 "
+                    className="text-xs lg:text-base h-6 w-[180px] p-1 bg-white border rounded lg:h-8 border-zinc-400 lg:w-7/12 "
                     value={checkerName}
                     onChange={handleCheckerNameChange}
                   />

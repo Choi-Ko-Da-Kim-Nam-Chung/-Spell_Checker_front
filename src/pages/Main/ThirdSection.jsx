@@ -1,30 +1,6 @@
 import React, { forwardRef, useState, useEffect } from 'react';
 import { images } from '../../utils/images';
 
-const TextBox = ({ index, selectedTextBox, handleClick, title, content }) => (
-  <div className="flex lg:mb-8">
-    <div
-      className={`relative -top-[80px] left-[22px] lg:-top-[112px] lg:left-[21px] ${
-        index === 0 ? '' : 'bg-[#e3e3e3]'
-      } h-[80px] lg:h-[114px] w-1`}></div>
-    <div
-      className={`z-10 w-[40px] h-[40px] text-center text-xl text-[#5e75ee] fontBlack rounded-full border-4 border-[#e3e3e3] pt-0.5 ${
-        selectedTextBox === index ? 'bg-[#5e75ee] border-none text-[#ffffff] pt-[6px]' : ''
-      }`}
-      onClick={() => handleClick(index)}>
-      {index + 1}
-    </div>
-    <div
-      className={`w-[250px] p-5 rounded-[20px] -mt-4 mb-3 duration-500 hover:translate-y-[-5px] ml-12 cursor-pointer ${
-        selectedTextBox === index ? 'bg-white textBoxShadow' : ''
-      }`}
-      onClick={() => handleClick(index)}>
-      <div className="mb-2 text-xl fontBold">{title}</div>
-      <div className="text-base">{content}</div>
-    </div>
-  </div>
-);
-
 const ThirdSection = forwardRef((props, ref) => {
   const [selectedTextBox, setSelectedTextBox] = useState(0);
 
@@ -82,7 +58,7 @@ const ThirdSection = forwardRef((props, ref) => {
             content="맞춤법 검사를 통해 수정된 파일을 다운받아 보세요!"
           />
         </div>
-        <div className="w-[350px] mx-auto lg:mx-0 my-12 h-fit lg:w-[600px] shadow-lg rounded-[30px] lg:rounded-[50px] my-auto">
+        <div className="w-[350px] mx-auto lg:mx-0 mt-12 mb-28 h-fit lg:w-[600px] shadow-lg rounded-[30px] lg:rounded-[50px] lg:my-auto">
           <img src={selectedImage()} alt="이용방법 사진" className="rounded-[30px] lg:rounded-[50px]" />
         </div>
       </div>
@@ -91,3 +67,27 @@ const ThirdSection = forwardRef((props, ref) => {
 });
 
 export default ThirdSection;
+
+const TextBox = ({ index, selectedTextBox, handleClick, title, content }) => (
+  <div className="flex lg:mb-8">
+    <div
+      className={`relative -top-[80px] left-[22px] lg:-top-[112px] lg:left-[21px] ${
+        index === 0 ? '' : 'bg-[#e3e3e3]'
+      } h-[80px] lg:h-[114px] w-1`}></div>
+    <div
+      className={`z-10 w-[40px] h-[40px] text-center text-xl text-[#5e75ee] fontBlack rounded-full border-4 border-[#e3e3e3] pt-0.5 ${
+        selectedTextBox === index ? 'bg-[#5e75ee] border-none text-[#ffffff] pt-[6px]' : ''
+      }`}
+      onClick={() => handleClick(index)}>
+      {index + 1}
+    </div>
+    <div
+      className={`w-[250px] p-5 rounded-[20px] -mt-4 mb-3 duration-500 hover:translate-y-[-5px] ml-12 cursor-pointer ${
+        selectedTextBox === index ? 'bg-white textBoxShadow' : ''
+      }`}
+      onClick={() => handleClick(index)}>
+      <div className="mb-2 text-[16px] lg:text-xl fontBold">{title}</div>
+      <div className="text-xs lg:text-base">{content}</div>
+    </div>
+  </div>
+);

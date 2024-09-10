@@ -13,7 +13,7 @@ const SecondSection = forwardRef((props, ref) => {
           <img
             src={images.mainIntro}
             alt="검사기 이용방법 사진"
-            className="shadow-lg rounded-2xl lg:rounded-[50px] h-fit w-1/2"
+            className="shadow-lg rounded-2xl lg:rounded-[50px] w-1/2"
           />
           <div className="my-auto ml-8 lg:ml-24">
             <div className="bg-[#303A6E] w-fit p-1 rounded lg:w-[45px] lg:h-[45px] lg:p-[7px] lg:rounded-lg">
