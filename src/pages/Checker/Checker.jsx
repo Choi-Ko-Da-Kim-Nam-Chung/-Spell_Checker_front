@@ -70,7 +70,7 @@ function Checker() {
     console.log(data);
 
     try {
-      const response = await axios.post('http://3.34.51.88:8080/grammar-check/apply', formData, {
+      const response = await axios.post('https://api.spell-checker.co.kr/grammar-check/apply', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
