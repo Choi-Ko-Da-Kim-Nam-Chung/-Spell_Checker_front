@@ -71,9 +71,9 @@ export default ThirdSection;
 const TextBox = ({ index, selectedTextBox, handleClick, title, content }) => (
   <div className="flex lg:mb-8">
     <div
-      className={`relative -top-[80px] left-[22px] lg:-top-[112px] lg:left-[21px] ${
+      className={`relative -top-[62px] left-[22px] lg:-top-[112px] lg:left-[21px] ${
         index === 0 ? '' : 'bg-[#e3e3e3]'
-      } h-[80px] lg:h-[114px] w-1`}></div>
+      } h-[65px] lg:h-[114px] w-1`}></div>
     <div
       className={`z-10 w-[40px] h-[40px] text-center text-xl text-[#5e75ee] fontBlack rounded-full border-4 border-[#e3e3e3] pt-0.5 ${
         selectedTextBox === index ? 'bg-[#5e75ee] border-none text-[#ffffff] pt-[6px]' : ''
