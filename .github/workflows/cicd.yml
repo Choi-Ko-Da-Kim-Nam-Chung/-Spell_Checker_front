@@ -46,10 +46,10 @@ jobs:
       - name: SSH into AWS EC2 instance
         uses: appleboy/ssh-action@master
         with:
-          host: 43.203.232.246
+          host: 43.203.118.190
           debug: true
           port: 22
           username: ubuntu
-          key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SECRET_KEY }}
           script: |
-            ssh -o StrictHostKeyChecking=no ubuntu@10.0.129.19 'bash /home/ubuntu/deploy-frontend.sh'
+            '/home/ubuntu/deploy-django.sh'
