@@ -30,7 +30,7 @@ const Nav = ({ scrollRef }) => {
   }, []);
 
   const navbg = `Nav fixed z-20 top-0 left-0 right-0 flex justify-between items-center y-3 ${
-    scrolling ? 'nav-bg-scrolled' : ''
+    scrolling ? 'navBgScrolled' : ''
   }`;
 
   const [navIndex, setNavIndex] = useState(null);
@@ -81,7 +81,7 @@ const Nav = ({ scrollRef }) => {
   return (
     <>
       <div className={navbg}>
-        <div className="flex justify-between w-10/12 mx-auto mt-4 text-lg">
+        <div className="flex justify-between w-10/12 mx-auto mt-4 text-xs lg:text-lg whitespace-nowrap">
           <Link
             to="/"
             onClick={() => {
@@ -90,14 +90,14 @@ const Nav = ({ scrollRef }) => {
                 behavior: 'smooth',
               });
             }}>
-            <div className="fontBold flex flex-row">
+            <div className="flex flex-row fontBold">
               <span className="text-[#5e75ee] pr-1.5">서식 유지</span> 맞춤법 검사기
             </div>
           </Link>
-          <div className="flex justify-between text-base text-[#a9a9a9] my-auto">
+          <div className="flex justify-between text-[10px] lg:text-base text-[#a9a9a9] my-auto">
             {DETAIL_NAV.map(({ idx, title }) => (
               <div
-                className={`navItem mx-3 px-1 cursor-pointer ${idx === navIndex ? 'active' : ''}`}
+                className={`navItem mx-1 lg:mx-3 px-1 cursor-pointer ${idx === navIndex ? 'active' : ''}`}
                 key={idx}
                 ref={ref => (navRef.current[idx] = ref)}
                 onClick={() => handleNavItemClick(idx)}>

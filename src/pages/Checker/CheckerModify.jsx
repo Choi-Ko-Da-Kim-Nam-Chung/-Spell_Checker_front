@@ -177,13 +177,13 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
   };
 
   return (
-    <div className="flex flex-col h-[60vh] w-[30%]">
-      <div className="bg-slate-700 h-14 pb-3 sticky top-0">
-        <div className="text-white text-lg pl-5 pt-3 fontSB">수정하기</div>
+    <div className="flex flex-col h-[40vh] lg:h-[60vh] lg:w-[30%]">
+      <div className="sticky top-0 h-10 pb-3 bg-slate-700 lg:h-14">
+        <div className="pt-2.5 pl-5 text-sm text-white lg:pt-3 lg:text-lg fontSB">수정하기</div>
       </div>
-      <div className="w-full h-full bg-white border-b border-r border-stone-300 scroll overflow-y-scroll">
+      <div className="w-full h-full overflow-y-scroll bg-white border-b border-r border-stone-300 scroll">
         {errors.length === 0 ? (
-          <div className="flex justify-center items-center h-full">
+          <div className="flex items-center justify-center h-full">
             <div className="text-xl fontBold">추천 수정사항이 없습니다!</div>
           </div>
         ) : (
@@ -191,22 +191,22 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
             <div
               key={`${error.start}-${error.errorIdx}-${index}`}
               id={`modifyBox-${error.start}-${error.errorIdx}`}
-              className="modifyBox px-4 pb-1 text-sm"
+              className="px-4 pb-1 text-xs lg:text-sm modifyBox"
               onClick={() => onBoxClick(error.start, error.errorIdx)}
               style={{ cursor: 'pointer' }}>
               <div className="flex items-center my-2">
-                <div className="text-black fontBold mr-5">기존 내용</div>
-                <div className="fontBold text-red-500">{error.originalText}</div>
+                <div className="mr-5 text-black fontBold whitespace-nowrap">기존 내용</div>
+                <div className="text-red-500 fontBold">{error.originalText}</div>
                 <FaRegCheckCircle
                   size="18"
                   className={`cursor-pointer ml-auto ${
-                    error.checkedSection === 'original' ? 'text-green-500' : 'text-gray-300'
+                    error.checkedSection === 'original' ? 'text-slate-700' : 'text-gray-300'
                   }`}
                   onClick={() => toggleCheck(index, 'original')}
                 />
               </div>
               <div className="flex items-center my-4">
-                <div className="text-black fontBold mr-5">추천 수정</div>
+                <div className="mr-5 text-black fontBold whitespace-nowrap">추천 수정</div>
                 {error.replacementOptions.length > 1 ? (
                   <>
                     <select
@@ -222,7 +222,7 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
                     <FaRegCheckCircle
                       size="18"
                       className={`cursor-pointer ml-auto ${
-                        error.checkedSection === 'replacement' ? 'text-green-500' : 'text-gray-300'
+                        error.checkedSection === 'replacement' ? 'text-slate-700' : 'text-gray-300'
                       }`}
                       onClick={() => toggleCheck(index, 'replacement')}
                     />
@@ -233,7 +233,7 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
                     <FaRegCheckCircle
                       size="18"
                       className={`cursor-pointer ml-auto ${
-                        error.checkedSection === 'replacement' ? 'text-green-500' : 'text-gray-300'
+                        error.checkedSection === 'replacement' ? 'text-slate-700' : 'text-gray-300'
                       }`}
                       onClick={() => toggleCheck(index, 'replacement')}
                     />
@@ -241,10 +241,10 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
                 )}
               </div>
               <div className="flex my-4">
-                <div className="text-black fontBold mr-4">직접 수정</div>
+                <div className="mr-4 text-black fontBold whitespace-nowrap">직접 수정</div>
                 <input
                   type="text"
-                  className="pl-1 w-2/3"
+                  className="w-2/3 pl-1"
                   placeholder="원하는 대치어를 입력하세요."
                   value={error.userText}
                   onChange={e => handleUserTextChange(index, e.target.value)}
@@ -252,19 +252,19 @@ const CheckerModify = ({ data, onUpdateData, onBoxClick }) => {
                 <FaRegCheckCircle
                   size="18"
                   className={`cursor-pointer ml-auto ${
-                    error.checkedSection === 'user' ? 'text-green-500' : 'text-gray-300'
+                    error.checkedSection === 'user' ? 'text-slate-700' : 'text-gray-300'
                   }`}
                   onClick={() => toggleCheck(index, 'user')}
                 />
               </div>
               <div className="flex justify-end">
                 <button
-                  className="text-white text-xs px-5 py-1.5 bg-slate-700 fontBold rounded-[14px]"
+                  className="text-white text-[10px] lg:text-xs px-4 lg:px-5 py-1.5 bg-slate-700 lg:fontBold rounded-[12px] lg:rounded-[14px]"
                   onClick={applyChanges}>
                   적용
                 </button>
               </div>
-              <hr className="w-full border border-gray-200 my-2" />
+              <hr className="w-full my-2 border border-gray-200" />
             </div>
           ))
         )}

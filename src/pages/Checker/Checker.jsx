@@ -52,14 +52,14 @@ function Checker() {
   const handleTextClick = (start, errorIdx) => {
     const modifyBox = document.getElementById(`modifyBox-${start}-${errorIdx}`);
     if (modifyBox) {
-      modifyBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      modifyBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   const handleBoxClick = (start, errorIdx) => {
     const errorText = document.getElementById(`errorText-${start}-${errorIdx}`);
     if (errorText) {
-      errorText.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      errorText.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -70,7 +70,7 @@ function Checker() {
     console.log(data);
 
     try {
-      const response = await axios.post('http://localhost:8080/grammar-check/apply', formData, {
+      const response = await axios.post('http://3.34.51.88:8080/grammar-check/apply', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -106,29 +106,29 @@ function Checker() {
     <>
       <Nav />
       <div className="min-h-screen">
-        <div className="w-10/12 bg-white rounded-xl shadow-md flex flex-col mx-auto items-center mt-24 p-4">
-          <div className="text-3xl fontBold w-11/12 border-l-8 border-[#303A6E] pl-4 py-3 mt-4 flex justify-between">
-            <div>맞춤법 검사</div>
+        <div className="flex flex-col items-center w-10/12 p-4 mx-auto mt-12 bg-white shadow-md lg:mt-24 rounded-xl">
+          <div className="text-xl lg:text-3xl fontBold w-11/12 border-l-[6px] lg:border-l-8 border-[#303A6E] pl-2 lg:pl-4 py-2 lg:py-3 mt-4 flex justify-between">
+            맞춤법 검사
           </div>
           <div className="flex items-center w-11/12 px-1 justify-between text-base text-[#a9a9a9]">
-            <div className="text-sm">** 본 내용에서 서식은 무시됩니다.</div>
+            <div className="text-[10px] lg:text-sm">** 본 내용에서 서식은 무시됩니다.</div>
             <div className="flex items-center cursor-pointer" onClick={() => setShowManual(true)}>
-              <img src={images.Question} alt="물음표 아이콘" className="w-4 h-4 mx-2" />
-              <div className="text-[#c8c8c8]">사용설명서</div>
+              <img src={images.Question} alt="물음표 아이콘" className="w-3 h-3 mx-1 lg:mx-2 lg:w-4 lg:h-4" />
+              <div className="text-xs lg:text-base">사용설명서</div>
             </div>
           </div>
           {showManual && (
             <div>
-              <div className="absolute z-20 rounded-lg shadow-2xl w-5/12">
-                <div className="bg-white p-8 rounded-lg">
+              <div className="absolute w-[320px] right-8 z-20 lg:w-[400px] rounded-lg shadow-2xl lg:right-44 lg:top-56">
+                <div className="p-5 bg-white rounded-lg lg:p-8">
                   <div className="flex justify-between">
-                    <div className="text-xl font-bold">사용설명서</div>
+                    <div className="text-sm font-bold lg:text-xl">사용설명서</div>
                     <button onClick={() => setShowManual(false)}>
                       <IoClose size="25" />
                     </button>
                   </div>
-                  <div className="border mt-2"></div>
-                  <div className="p-1 mt-2 leading-loose flex">
+                  <div className="mt-2 border"></div>
+                  <div className="flex p-1 mt-2 text-xs leading-loose lg:text-base">
                     <div className="mr-1">
                       <div>1.</div>
                       <br />
@@ -149,17 +149,19 @@ function Checker() {
               </div>
             </div>
           )}
-          <div className="flex justify-center w-11/12 h-full mt-2">
+          <div className="flex flex-col justify-center w-11/12 h-full mt-2 lg:flex-row">
             <CheckerFile data={data} onTextClick={handleTextClick} modifiedText={modifiedText} />
             <CheckerModify data={data} onUpdateData={handleUpdateData} onBoxClick={handleBoxClick} />
           </div>
-          <div className="w-11/12 mt-4 flex justify-end items-center">
+          <div className="flex items-center justify-end w-11/12 mt-4">
             <button
-              className="text-sm text-white w-1/12 py-2 bg-slate-700 fontBold rounded-2xl mr-4"
+              className="px-6 py-2 mr-4 text-xs text-white lg:text-sm bg-slate-700 rounded-[14px]"
               onClick={finishEdit}>
               수정 완료
             </button>
-            <button className="text-sm w-1/12 py-2 bg-zinc-100 rounded-2xl border border-stone-300" onClick={onClose}>
+            <button
+              className="px-6 py-2 text-xs border lg:text-sm bg-zinc-100 rounded-[14px] border-stone-300"
+              onClick={onClose}>
               이전 화면
             </button>
           </div>
@@ -173,15 +175,15 @@ function Checker() {
                 <img src={fileIcon} alt="File Icon" className="w-12 h-12" />
               </div>
             )}
-            <div className="text-lg font-bold mb-4 text-center">파일을 다운하시겠습니까?</div>
+            <div className="mb-4 text-lg font-bold text-center">파일을 다운하시겠습니까?</div>
             <div className="flex justify-center">
               <button
-                className="text-sm text-white py-2 px-4 bg-slate-700 fontBold rounded-2xl mr-2"
+                className="px-4 py-2 mr-2 text-sm text-white bg-slate-700 fontBold rounded-2xl"
                 onClick={downloadFile}>
                 다운
               </button>
               <button
-                className="text-sm py-2 px-4 bg-zinc-100 rounded-2xl border border-stone-300"
+                className="px-4 py-2 text-sm border bg-zinc-100 rounded-2xl border-stone-300"
                 onClick={() => setShowDownloadPopup(false)}>
                 닫기
               </button>

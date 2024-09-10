@@ -174,8 +174,8 @@ const CheckerFile = ({ data, onTextClick }) => {
   };
 
   return (
-    <div className="w-[70%] h-[60vh] bg-white border border-stone-300 scroll overflow-y-scroll">
-      <div className="py-4 pl-5 pr-3">{renderPage(data)}</div>
+    <div className="h-[35vh] lg:w-[70%] lg:h-[60vh] bg-white border border-stone-300 scroll overflow-y-scroll">
+      <div className="py-4 pl-5 pr-3 text-xs lg:text-base">{renderPage(data)}</div>
     </div>
   );
 };
