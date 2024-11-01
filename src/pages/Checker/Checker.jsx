@@ -51,16 +51,12 @@ function Checker() {
 
   const handleTextClick = (start, errorIdx) => {
     const modifyBox = document.getElementById(`modifyBox-${start}-${errorIdx}`);
-    if (modifyBox) {
-      modifyBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    
   };
 
   const handleBoxClick = (start, errorIdx) => {
     const errorText = document.getElementById(`errorText-${start}-${errorIdx}`);
-    if (errorText) {
-      errorText.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    
   };
 
   const finishEdit = async () => {
@@ -70,7 +66,7 @@ function Checker() {
     console.log(data);
 
     try {
-      const response = await axios.post('https://api.spell-checker.co.kr/grammar-check/apply', formData, {
+      const response = await axios.post('http://localhost:8080/grammar-check/apply', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

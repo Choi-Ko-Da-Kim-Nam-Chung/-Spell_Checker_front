@@ -66,7 +66,7 @@ function Upload() {
       formData.append('type', checkerType);
 
       try {
-        const response = await axios.post('https://api.spell-checker.co.kr/grammar-check/scan', formData, {
+        const response = await axios.post('http://localhost:8080/grammar-check/scan', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
